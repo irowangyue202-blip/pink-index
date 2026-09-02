@@ -223,48 +223,38 @@ body.app-screen .site-footer { display: none; }
   gap: var(--grid-gap);
 }
 
-/* --- Header ---------------------------------------------- */
+/* --- Header ----------------------------------------------
+   画面幅いっぱいの黒い帯。スクロールしても消えず、英字だけを並べる。
+   本文はヘッダーの高さぶん下から始まるので、絵にも文字にも重ならない。
+   --------------------------------------------------------- */
 .site-header {
   position: sticky; top: 0; z-index: var(--z-header);
-  height: var(--header-h);
-  display: flex; align-items: center; gap: var(--s-5);
+  min-height: var(--header-h);
+  display: flex; align-items: center; gap: clamp(var(--s-4), 3vw, var(--s-7));
   padding: 0 var(--page-x);
-  background: color-mix(in srgb, var(--c-canvas) 88%, transparent);
-  backdrop-filter: blur(10px);
-  border-bottom: var(--line-hair);
+  background: var(--c-ink);
+  color: var(--c-white);
 }
-.site-header--overlay {
-  position: fixed; left: 0; right: 0;
-  background: transparent; backdrop-filter: none; border-bottom: 0;
+.site-header__logo {
+  font-family: var(--font-en); font-weight: var(--w-bold);
+  font-size: 0.95rem; letter-spacing: var(--ls-label); text-transform: uppercase;
+  color: var(--c-white); display: inline-flex; align-items: center; gap: var(--s-2);
+  min-height: var(--tap-min);
 }
-.logo {
-  font-family: var(--font-en);
-  font-weight: var(--w-bold);
-  font-size: 0.95rem;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  display: inline-flex; align-items: baseline; gap: var(--s-2);
-}
-.logo::after {
-  content: ""; width: 5px; height: 5px; border-radius: 50%;
-  background: var(--c-accent);            /* 鮮やかなピンクは直径数pxの点だけ */
-}
-.site-nav { margin-left: auto; display: flex; gap: var(--s-5); align-items: center; }
-/* 英字だけでは何の画面か分からないため、必ず日本語を併記する */
+.site-header__logo:hover { color: var(--c-white); text-decoration: none; opacity: 0.75; }
+
+.site-nav { margin-left: auto; display: flex; gap: clamp(var(--s-3), 2vw, var(--s-6)); align-items: center; }
 .site-nav a {
-  display: flex; flex-direction: column; gap: 1px;
-  color: var(--c-ink-muted);
-  padding: var(--s-2) 0;
-  border-bottom: 1px solid transparent;
-  transition: color var(--m-micro) var(--ease-out), border-color var(--m-micro) var(--ease-out);
-}
-.site-nav .nav-en {
+  display: inline-flex; align-items: center; min-height: var(--tap-min);
   font-family: var(--font-en); font-size: var(--t-xs);
   letter-spacing: var(--ls-label); text-transform: uppercase;
+  color: color-mix(in srgb, var(--c-white) 72%, transparent);
+  border-bottom: 2px solid transparent;
+  transition: color var(--m-micro) var(--ease-out), border-color var(--m-micro) var(--ease-out);
 }
-.site-nav .nav-jp { font-size: 10px; letter-spacing: 0.04em; }
-.site-nav a:hover { color: var(--c-ink); border-bottom-color: var(--c-ink); text-decoration: none; }
-.site-nav a[aria-current="page"] { color: var(--c-ink); border-bottom-color: var(--c-accent); }
+.site-nav a:hover { color: var(--c-white); text-decoration: none; }
+.site-nav a[aria-current="page"] { color: var(--c-white); border-bottom-color: var(--c-accent); }
+.site-header :focus-visible { outline: 2px solid var(--c-white); outline-offset: 2px; }
 
 .nav-toggle { display: none; }
 
@@ -272,27 +262,33 @@ body.app-screen .site-footer { display: none; }
   .site-nav {
     position: fixed; inset: var(--header-h) 0 auto 0;
     flex-direction: column; align-items: flex-start; gap: 0;
-    background: var(--c-white);
-    border-bottom: var(--line-ink);
-    padding: var(--s-4) var(--page-x) var(--s-6);
+    background: var(--c-ink);
+    padding: var(--s-2) var(--page-x) var(--s-5);
     transform: translateY(-8px); opacity: 0; pointer-events: none;
     transition: opacity var(--m-panel) var(--ease-out), transform var(--m-panel) var(--ease-out);
   }
   .site-nav[data-open="true"] { transform: none; opacity: 1; pointer-events: auto; }
   .site-nav a {
-    flex-direction: row; align-items: baseline; gap: var(--s-3);
-    padding: var(--s-3) 0; width: 100%; min-height: var(--tap-min);
-    border-bottom: var(--line-hair);
+    width: 100%; padding: var(--s-3) 0; font-size: 0.95rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--c-white) 18%, transparent);
   }
-  .site-nav .nav-en { font-size: 0.9rem; }
-  .site-nav .nav-jp { font-size: var(--t-sm); }
+  .site-nav a[aria-current="page"] { border-bottom-color: var(--c-accent); }
   .nav-toggle {
-    display: inline-flex; align-items: center; gap: var(--s-2);
-    margin-left: auto; min-height: var(--tap-min); padding: 0 var(--s-2);
-    background: none; border: 0; cursor: pointer;
-    font-family: var(--font-en); font-size: var(--t-xs);
-    letter-spacing: var(--ls-label); text-transform: uppercase;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: auto; min-width: var(--tap-min); min-height: var(--tap-min);
+    background: none; border: 0; cursor: pointer; color: var(--c-white);
   }
+  /* 3本線。開いているときは×に変える */
+  .nav-toggle__bar, .nav-toggle__bar::before, .nav-toggle__bar::after {
+    display: block; width: 20px; height: 1.5px; background: currentColor;
+    transition: transform var(--m-micro) var(--ease-out), opacity var(--m-micro) var(--ease-out);
+  }
+  .nav-toggle__bar::before, .nav-toggle__bar::after { content: ""; position: absolute; width: 20px; }
+  .nav-toggle__bar::before { transform: translateY(-6px); }
+  .nav-toggle__bar::after { transform: translateY(6px); }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bar { background: transparent; }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bar::before { transform: rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__bar::after { transform: rotate(-45deg); }
 }
 
 /* つまみとチェックは、サイトの色（黒）で塗る */
@@ -300,30 +296,38 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress {
   accent-color: var(--c-ink);
 }
 
-/* --- Footer ---------------------------------------------- */
+/* --- Footer ----------------------------------------------
+   最後の1枚のビジュアルとして置く。巨大なロゴと、その下の横並びだけ。
+   --------------------------------------------------------- */
 .site-footer {
   border-top: var(--line-ink);
-  padding: var(--s-7) var(--page-x) var(--s-6);
+  padding: clamp(3rem, 8vw, 7rem) var(--page-x) var(--s-6);
   margin-top: var(--s-9);
   background: var(--c-white);
+  display: grid; justify-items: center; gap: clamp(1.5rem, 4vw, 3rem);
+  overflow: clip;
 }
-.site-footer .footer-grid {
-  max-width: var(--max-w); margin: 0 auto;
-  display: grid; gap: var(--s-6);
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.brand-logo { display: block; width: 100%; max-width: var(--max-w); }
+.brand-logo:hover { text-decoration: none; }
+.brand-logo__img { display: block; width: 100%; height: auto; }
+/* 画面幅いっぱいのロゴタイプ。SVGなので、どの幅でも切れずに収まる */
+.brand-logo__type { display: block; width: 100%; height: auto; }
+.brand-logo__type text {
+  font-family: var(--font-en); font-weight: var(--w-bold);
+  font-size: 118px; fill: var(--c-ink);
 }
-.site-footer h2 {
+.brand-links {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: clamp(var(--s-3), 2.5vw, var(--s-6));
+}
+.brand-links a {
   font-family: var(--font-en); font-size: var(--t-xs);
   letter-spacing: var(--ls-label); text-transform: uppercase;
-  color: var(--c-ink-muted); margin-bottom: var(--s-3);
+  color: var(--c-ink-muted); min-height: var(--tap-min);
+  display: inline-flex; align-items: center;
 }
-.site-footer li + li { margin-top: var(--s-2); }
-.site-footer a { font-size: var(--t-sm); }
-.footer-note {
-  max-width: var(--max-w); margin: var(--s-6) auto 0;
-  padding-top: var(--s-4); border-top: var(--line-hair);
-  font-size: var(--t-xs); color: var(--c-ink-muted); line-height: 1.9;
-}
+.brand-links a:hover { color: var(--c-ink); text-decoration: none; }
+.brand-copy { font-size: var(--t-xs); color: var(--c-ink-muted); margin: 0; }
 
 /* --- Section heading (番号 + 英字 + 和文) ------------------- */
 .section-head { display: flex; align-items: flex-end; gap: var(--s-5); flex-wrap: wrap; margin-bottom: var(--s-6); }
@@ -577,6 +581,14 @@ input[type="range"], input[type="checkbox"], input[type="radio"], progress {
   background: color-mix(in srgb, var(--c-accent) 14%, transparent);
 }
 
+/* 未登録の区画。理由も導線も書かず、1語だけ置く */
+.coming {
+  font-family: var(--font-en); font-size: var(--t-xs);
+  letter-spacing: var(--ls-label); color: var(--c-ink-muted);
+  text-align: center; padding: clamp(3rem, 10vw, 7rem) 0; margin: 0;
+  max-width: none; width: 100%;
+}
+
 /* ============================================================
    PINK INDEX — Loader (企画書 5章)
    「サイトへの待ち時間」ではなく「白い作品台帳が開き、
@@ -783,39 +795,47 @@ body[data-loading="true"] { overflow: hidden; }
 /* 画面が低いときは、幅ではなく高さに合わせて縮める（ヘッダーと衝突させない） */
 .hs--hero .hs__title { font-size: clamp(2rem, min(10vw, 13svh), 9.5rem); line-height: 0.9; }
 .hs--hero .hs__eyebrow, .hs--hero .hs__sub { opacity: 1; }
-.hs__empty {
-  font-size: var(--t-xs); letter-spacing: 0.06em; opacity: 0.6;
-  margin: var(--s-5) 0 0;
-}
 
-/* 切り替えの操作。画面の下端に小さく置く */
-.kv__nav {
-  position: absolute; left: var(--page-x); right: var(--page-x); bottom: clamp(1.25rem, 3vw, 2.25rem);
-  z-index: 2; display: flex; align-items: center; gap: var(--s-3);
-  color: var(--hs-fg); pointer-events: none;
-}
-.kv__nav > * { pointer-events: auto; }
+/* 切り替えの操作。
+   矢印は左右の端に置き、絵を邪魔しない細い形にする。
+   押せる範囲は44px以上を確保する。数値のカウンターは出さない。 */
 .kv__arrow {
-  width: 44px; height: 44px; border-radius: 50%;
-  border: 1px solid currentColor; background: transparent; color: inherit;
-  font-size: 1rem; line-height: 1; cursor: pointer;
-  transition: background var(--m-micro) var(--ease-out), color var(--m-micro) var(--ease-out);
-}
-.kv__arrow:hover { background: currentColor; }
-.kv__arrow:hover::first-line { color: var(--hs-bg); }
-.kv__arrow[disabled] { opacity: 0.3; cursor: default; }
-.kv__dots { display: flex; gap: var(--s-2); align-items: center; margin-left: var(--s-2); }
-.kv__dots button {
-  width: 28px; height: 2px; border: 0; padding: 0; cursor: pointer;
-  background: currentColor; opacity: 0.3;
+  position: absolute; top: 50%; translate: 0 -50%;
+  z-index: 2;
+  width: clamp(44px, 5vw, 64px); height: clamp(44px, 8vh, 84px);
+  display: grid; place-items: center;
+  border: 0; background: none; color: var(--hs-fg, var(--c-ink));
+  cursor: pointer; opacity: 0.75;
   transition: opacity var(--m-micro) var(--ease-out);
 }
-.kv__dots button[aria-current="true"] { opacity: 1; }
-.kv__dots li { display: flex; }
-.kv__count {
-  margin: 0 0 0 auto; font-family: var(--font-en); font-size: var(--t-xs);
-  letter-spacing: 0.18em;
+.kv__arrow:hover { opacity: 1; }
+.kv__arrow[disabled] { opacity: 0.18; cursor: default; }
+.kv__arrow--prev { left: max(var(--s-2), calc(var(--page-x) - 1.25rem)); }
+.kv__arrow--next { right: max(var(--s-2), calc(var(--page-x) - 1.25rem)); }
+/* 細い山形（＜ ＞）。線1本ぶんの太さで描く */
+.kv__arrow > span {
+  width: 14px; height: 14px;
+  border-left: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
 }
+.kv__arrow--prev > span { rotate: 45deg; translate: 3px 0; }
+.kv__arrow--next > span { rotate: -135deg; translate: -3px 0; }
+
+.kv__dots {
+  position: absolute; left: 0; right: 0; bottom: clamp(1rem, 2.5vw, 2rem);
+  z-index: 2; display: flex; justify-content: center; gap: var(--s-2);
+  list-style: none; margin: 0; padding: 0;
+  color: var(--hs-fg, var(--c-ink));
+}
+.kv__dots li { display: flex; }
+.kv__dots button {
+  width: 26px; height: 2px; border: 0; padding: 8px 0; cursor: pointer;
+  background: transparent; position: relative; opacity: 0.45;
+  transition: opacity var(--m-micro) var(--ease-out);
+}
+.kv__dots button::after {
+  content: ""; position: absolute; inset: 8px 0; background: currentColor;
+}
+.kv__dots button[aria-current="true"] { opacity: 1; }
 
 /* 画像がまだ無いときも、色面と文字だけで成立させる */
 .hs--hero-empty { min-height: min(72svh, 760px); display: grid; }
@@ -954,8 +974,7 @@ body[data-loading="true"] { overflow: hidden; }
 /* --- スマートフォン ---------------------------------------- */
 @media (max-width: 900px) {
   .kv__slide { min-height: min(78svh, 720px); }
-  .kv__nav { gap: var(--s-2); }
-  .kv__count { display: none; }
+  .kv__arrow { width: 44px; height: 56px; }
   .hs__free { inset: calc(var(--header-h) + 0.5rem) var(--page-x) clamp(4.5rem, 14vw, 6rem); }
 
   .hs--split, .hs--cta { grid-template-columns: 1fr; min-height: 0; }
@@ -1381,6 +1400,24 @@ body[data-loading="true"] { overflow: hidden; }
   color: var(--c-ink-muted); margin-left: auto;
 }
 
+/* --- TERMS / PRIVACY / CONTACT -------------------------------
+   最下部の並びから開く3枚。読ませる面なので、幅を詰めて行間を広く。
+   ------------------------------------------------------------ */
+.doc { max-width: 46rem; padding-block: clamp(2.5rem, 7vw, 6rem); }
+.doc__title {
+  font-family: var(--font-en); font-size: var(--t-display);
+  font-weight: var(--w-bold); letter-spacing: -0.02em; line-height: 0.9;
+}
+.doc__sub { font-size: var(--t-sm); color: var(--c-ink-muted); margin: var(--s-3) 0 0; }
+.doc__section { margin-top: clamp(2rem, 5vw, 3.5rem); }
+.doc__section h2 {
+  font-family: var(--font-en); font-size: var(--t-xs);
+  letter-spacing: var(--ls-label); color: var(--c-ink-muted);
+  padding-bottom: var(--s-2); border-bottom: var(--line-hair);
+}
+.doc__section ul { margin: var(--s-4) 0 0; padding-left: 1.2em; }
+.doc__section li + li { margin-top: var(--s-3); }
+
 /* ============================================================
    PINK INDEX — Studio (管理画面 / 企画書 7.7)
    同じ色・書体・罫線を使うが、巨大文字や演出は最小限。
@@ -1695,6 +1732,49 @@ body[data-loading="true"] { overflow: hidden; }
   .texts__list { max-height: none; }
 }
 
+/* 管理サイドバーの補足（公開側では使わない） */
+.footer-note {
+  padding-top: var(--s-4); border-top: var(--line-hair);
+  font-size: var(--t-xs); color: var(--c-ink-muted); line-height: 1.9;
+}
+
+/* --- タグ・色の入力（押して外せるチップ） --------------------- */
+.chips-input {
+  border: var(--line-hair); border-radius: var(--r-2); padding: var(--s-2);
+  display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; background: var(--c-white);
+}
+.chips-input__list { display: contents; }
+.chips-input .input { border: 0; flex: 1 1 8rem; min-width: 8rem; padding: var(--s-1) var(--s-2); }
+.chip-token {
+  display: inline-flex; align-items: center; gap: var(--s-2);
+  border: var(--line-hair); border-radius: 999px; background: var(--c-pink-mist);
+  padding: var(--s-1) var(--s-3); font-size: var(--t-xs); cursor: pointer; min-height: 30px;
+}
+.chip-token:hover { border-color: var(--c-ink); }
+
+/* --- 公開状態 ------------------------------------------------- */
+.vis-fields {
+  border: var(--line-hair); border-radius: var(--r-2);
+  padding: var(--s-4); margin: 0; display: grid; gap: var(--s-2);
+}
+.vis-fields > legend { font-size: var(--t-xs); letter-spacing: var(--ls-label); color: var(--c-ink-muted); padding: 0 var(--s-2); }
+
+/* 公開状態の印。PRIVATE は控えめ、公開しているものは黒で示す */
+.vis-pill {
+  display: inline-block; font-family: var(--font-en); font-size: 10px;
+  letter-spacing: var(--ls-label); padding: 2px var(--s-2);
+  border: 1px solid var(--c-hairline); border-radius: 999px; color: var(--c-ink-muted);
+}
+.vis-pill:not([data-vis="PRIVATE"]) { border-color: var(--c-ink); color: var(--c-ink); }
+
+/* --- 最下部のロゴの差し替え --------------------------------- */
+.logo-field { display: grid; gap: var(--s-3); max-width: 46rem; }
+.logo-field__preview {
+  border: var(--line-hair); border-radius: var(--r-2); background: var(--c-white);
+  padding: var(--s-4); display: grid; place-items: center; min-height: 96px;
+}
+.logo-field__preview img { max-width: 100%; height: auto; }
+
 /* 1ファイル版だけの調整 */
 body[data-chrome="off"] > .site-header,
 body[data-chrome="off"] > .site-footer { display: none; }
@@ -1702,59 +1782,35 @@ body[data-chrome="off"] > .site-footer { display: none; }
 
 <a class="skip-link" href="#main">本文へスキップ</a>
 
-  <header class="site-header site-header--overlay">
-    <a class="logo" href="#/">PINK INDEX</a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
-      <span class="nav-toggle__text">MENU</span>
+  <header class="site-header">
+    <a class="site-header__logo" href="#/">PINK INDEX</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="メニュー">
+      <span class="nav-toggle__bar" aria-hidden="true"></span>
     </button>
     <nav class="site-nav" id="site-nav" aria-label="サイト">
-      
-      <a href="#/dressup/">
-        <span class="nav-en">DRESS UP</span><span class="nav-jp">着せ替え</span>
-      </a>
-      <a href="#/closet/">
-        <span class="nav-en">CLOSET</span><span class="nav-jp">衣装図鑑</span>
-      </a>
-      <a href="#/girls/">
-        <span class="nav-en">GIRLS</span><span class="nav-jp">女の子</span>
-      </a>
-      <a href="#/collections/">
-        <span class="nav-en">COLLECTIONS</span><span class="nav-jp">シリーズ</span>
-      </a>
-      <a href="#/gallery/">
-        <span class="nav-en">GALLERY</span><span class="nav-jp">作品</span>
-      </a>
+      <a href="#/dressup/">DRESS UP</a><a href="#/closet/">CLOSET</a><a href="#/girls/">GIRLS</a><a href="#/collections/">COLLECTIONS</a><a href="#/gallery/">GALLERY</a>
     </nav>
   </header>
 <div id="pre"></div>
 <main id="main"></main>
 <footer class="site-footer">
-    <div class="footer-grid">
-      <div>
-        <h2>Index</h2>
-        <ul><li><a href="#/dressup/">01 DRESS UP／着せ替え</a></li><li><a href="#/closet/">02 CLOSET／衣装図鑑</a></li><li><a href="#/girls/">03 GIRLS／女の子</a></li><li><a href="#/collections/">04 COLLECTIONS／シリーズ</a></li><li><a href="#/gallery/">05 GALLERY／作品</a></li></ul>
-      </div>
-      <div>
-        <h2>Record</h2>
-        <ul>
-          <li><a href="#/updates/">更新履歴</a></li>
-        </ul>
-      </div>
-      <div>
-        <h2>Studio</h2>
-        <ul>
-          <li><a href="#/studio/">管理画面(デザイン確認用)</a></li>
-        </ul>
-      </div>
-    </div>
-    <p class="footer-note">
-      このサイトは広告を掲載しません。<br>
-      <span class="num">© 2026 PINK INDEX</span>
-    </p>
+    <a class="brand-logo" href="#/" aria-label="PINK INDEX">
+      <img class="brand-logo__img" id="brand-logo-img" alt="" hidden>
+      <!-- ロゴ資産が無いときの組み文字。幅いっぱいに必ず収まるよう字送りで合わせる -->
+      <svg class="brand-logo__type" id="brand-logo-type" viewBox="0 0 1000 118"
+           role="img" aria-label="PINK INDEX" focusable="false">
+        <text x="500" y="100" text-anchor="middle" textLength="1000"
+              lengthAdjust="spacingAndGlyphs">PINK INDEX</text>
+      </svg>
+    </a>
+    <nav class="brand-links" aria-label="サイトの案内">
+      <a href="#/dressup/">DRESS UP</a><a href="#/closet/">CLOSET</a><a href="#/girls/">GIRLS</a><a href="#/collections/">COLLECTIONS</a><a href="#/gallery/">GALLERY</a><a href="#/terms/">TERMS</a><a href="#/privacy/">PRIVACY</a><a href="#/contact/">CONTACT</a>
+    </nav>
+    <p class="brand-copy"><span class="num">© 2026 PINK INDEX</span></p>
   </footer>
 <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
 
-<script id="routes" type="application/json">{"/":{"title":"PINK INDEX","chrome":true,"bodyClass":"","overlay":true,"pre":"<div class=\"loader\" id=\"loader\" data-state=\"load\" role=\"dialog\" aria-modal=\"true\" aria-label=\"読み込み中\">\n  <div class=\"loader__top\">\n    <span>PINK INDEX</span>\n    <span>ILLUSTRATION ARCHIVE</span>\n  </div>\n  <p class=\"loader__count\" aria-hidden=\"true\">\n    <span class=\"loader__range\">01—100</span>\n    <span class=\"loader__digits loader__digits--l\" id=\"loader-d1\">0</span><span\n          class=\"loader__digits loader__digits--r\" id=\"loader-d2\">0</span>\n    <span class=\"loader__pct\">%</span>\n  </p>\n  <p class=\"visually-hidden\" id=\"loader-status\" aria-live=\"polite\">サイトを読み込んでいます 0%</p>\n</div>\n<div class=\"perimeter\" id=\"perimeter\" aria-hidden=\"true\">\n  <svg preserveAspectRatio=\"none\" id=\"perimeter-svg\">\n    <rect class=\"perimeter__track\" id=\"perimeter-track\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <rect class=\"perimeter__line\" id=\"perimeter-line\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <circle class=\"perimeter__tip\" id=\"perimeter-tip\" r=\"3.5\" cx=\"0\" cy=\"0\"></circle>\n  </svg>\n</div>\n<div class=\"home-frame\" id=\"home-frame\"></div>","main":"\n\n<div id=\"home-slots\">\n\n  <section class=\"hs hs--hero\" style=\"--hs-bg:#FFF9FC;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-ax:start;--hs-ay:center\">\n    <div class=\"kv\" data-kv>\n      <div class=\"kv__track\" id=\"kv-track\" tabindex=\"0\"\n           role=\"group\" aria-roledescription=\"カルーセル\" aria-label=\"キービジュアル\">\n        \n        <article class=\"kv__slide\" style=\"--hs-bg:#FFE8F2;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-ax:start;--hs-ay:center\" data-kv-slide=\"0\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"1 / 3｜2026 AUTUMN COLLECTION — PINK INDEX\">\n          \n          <div class=\"hs__free\">\n            <div class=\"hs__type hs__type--hero\"><p class=\"hs__eyebrow\">2026 AUTUMN COLLECTION</p>\n      <h1 class=\"hs__title\">PINK INDEX</h1>\n      <p class=\"hs__sub\">NEW VISUAL — SEPTEMBER 2026</p>\n      \n      <a class=\"hs__link\" href=\"#/dressup/\">START DRESSING</a><p class=\"hs__empty\">画像は管理画面から登録します</p></div>\n          </div>\n        </article>\n        <article class=\"kv__slide\" style=\"--hs-bg:#FFFBF4;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:100%;--hs-ty:0%;--hs-tw:40%;--hs-align:right;--hs-ax:start;--hs-ay:center\" data-kv-slide=\"1\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"2 / 3｜LOOK 02\">\n          \n          <div class=\"hs__free\">\n            <div class=\"hs__type hs__type--hero\"><p class=\"hs__eyebrow\">LOOK 02</p>\n      \n      \n      \n      <a class=\"hs__link\" href=\"#/gallery/\">作品を見る</a><p class=\"hs__empty\">画像は管理画面から登録します</p></div>\n          </div>\n        </article>\n        <article class=\"kv__slide\" style=\"--hs-bg:#2B2540;--hs-fg:#FFFBF4;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:50%;--hs-ty:50%;--hs-tw:50%;--hs-align:center;--hs-ax:start;--hs-ay:center\" data-kv-slide=\"2\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"3 / 3｜LOOK 03\">\n          \n          <div class=\"hs__free\">\n            <div class=\"hs__type hs__type--hero\"><p class=\"hs__eyebrow\">LOOK 03</p>\n      \n      \n      \n      <a class=\"hs__link\" href=\"#/closet/\">衣装を見る</a><p class=\"hs__empty\">画像は管理画面から登録します</p></div>\n          </div>\n        </article>\n      </div>\n\n      <div class=\"kv__nav\">\n        <button class=\"kv__arrow\" type=\"button\" data-kv-prev aria-label=\"前のビジュアル\">←</button>\n        <ol class=\"kv__dots\">\n          <li><button type=\"button\" data-kv-go=\"0\"\n            aria-label=\"1枚目を見る\" aria-current=\"true\"></button></li><li><button type=\"button\" data-kv-go=\"1\"\n            aria-label=\"2枚目を見る\"></button></li><li><button type=\"button\" data-kv-go=\"2\"\n            aria-label=\"3枚目を見る\"></button></li>\n        </ol>\n        <button class=\"kv__arrow\" type=\"button\" data-kv-next aria-label=\"次のビジュアル\">→</button>\n        <p class=\"kv__count num\"><span data-kv-current>1</span> / 3</p>\n      </div>\n    </div>\n  </section>\n</div>\n\n<section class=\"home-index\" id=\"home-index\" aria-labelledby=\"home-index-title\">\n  <h2 id=\"home-index-title\" class=\"home-index__label\">INDEX</h2>\n  <ul>\n    \n    <li>\n      <a href=\"#/dressup/\">\n        <span class=\"home-index__no num\">01</span>\n        <span class=\"home-index__en\">DRESS UP</span>\n        <span class=\"home-index__jp\">着せ替え</span>\n      </a>\n    </li>\n    <li>\n      <a href=\"#/closet/\">\n        <span class=\"home-index__no num\">02</span>\n        <span class=\"home-index__en\">CLOSET</span>\n        <span class=\"home-index__jp\">衣装図鑑</span>\n      </a>\n    </li>\n    <li>\n      <a href=\"#/girls/\">\n        <span class=\"home-index__no num\">03</span>\n        <span class=\"home-index__en\">GIRLS</span>\n        <span class=\"home-index__jp\">女の子</span>\n      </a>\n    </li>\n    <li>\n      <a href=\"#/collections/\">\n        <span class=\"home-index__no num\">04</span>\n        <span class=\"home-index__en\">COLLECTIONS</span>\n        <span class=\"home-index__jp\">シリーズ</span>\n      </a>\n    </li>\n    <li>\n      <a href=\"#/gallery/\">\n        <span class=\"home-index__no num\">05</span>\n        <span class=\"home-index__en\">GALLERY</span>\n        <span class=\"home-index__jp\">作品</span>\n      </a>\n    </li>\n  </ul>\n</section>\n\n<section class=\"home-archive\" id=\"home-archive\" aria-labelledby=\"home-archive-title\">\n  <div class=\"home-archive__counts\">\n    <h2 id=\"home-archive-title\" class=\"home-index__label\">ARCHIVE</h2>\n    \n    <p class=\"home-archive__count\"><span class=\"num\">0</span><span>素体</span></p>\n    <p class=\"home-archive__count\"><span class=\"num\">0</span><span>髪</span></p>\n    <p class=\"home-archive__count\"><span class=\"num\">0</span><span>衣装</span></p>\n    <p class=\"home-archive__count\"><span class=\"num\">0</span><span>小物</span></p>\n    <p class=\"home-archive__count\"><span class=\"num\">0</span><span>作品</span></p>\n    <p class=\"home-archive__count\"><span class=\"num\">0</span><span>女の子</span></p>\n  </div>\n  <div class=\"home-archive__note\">\n    <p class=\"hs__eyebrow\">UPDATE NOTE</p>\n    \n    <p class=\"hs__copy\">まだ何も登録されていません。管理画面から、描いた絵を1点そえてください。</p>\n    <a class=\"hs__link\" href=\"#/studio/new/\">絵を登録する</a>\n  </div>\n  \n</section>\n"},"/dressup/":{"title":"DRESS UP — PINK INDEX","chrome":true,"bodyClass":"app-screen","overlay":false,"pre":"","main":"\n\n<h1 class=\"visually-hidden\">DRESS UP — 素材を選んで1着を作る</h1>\n<div class=\"dressup\" id=\"dressup\" data-view=\"normal\">\n\n  <!-- 左: 白い展示台としてのプレビュー -->\n  <section class=\"stage\" aria-label=\"プレビュー\">\n    <div class=\"stage__bar toolbar\">\n      <a class=\"btn btn--sm btn--ghost\" href=\"#/\">← HOME</a>\n      <label class=\"visually-hidden\" for=\"look-name\">コーデ名</label>\n      <input class=\"stage__name\" id=\"look-name\" type=\"text\" value=\"名前のないコーデ\" maxlength=\"40\">\n      <span class=\"spacer\"></span>\n      <span class=\"stage__actions\" id=\"stage-actions\">\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-share\">共有URL</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-export\">書き出し</button>\n        <button class=\"btn btn--sm btn--primary\" type=\"button\" id=\"btn-save\">保存</button>\n      </span>\n    </div>\n\n    <div class=\"canvas\" id=\"canvas\" role=\"img\"\n         aria-label=\"現在のコーデのプレビュー\" data-w=\"720\" data-h=\"1080\">\n      <!-- レイヤーは client/dressup.js が baseOrder 順に描画する -->\n    </div>\n\n    <div class=\"stage__foot\">\n      <div class=\"toolbar\" id=\"stage-toolbar\">\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-undo\" disabled>↩ 戻す</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-redo\" disabled>↪ やり直す</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-clear\">全解除</button>\n      </div>\n      <p class=\"conflict\" id=\"conflict\" hidden></p>\n      <div class=\"current-look\" id=\"current-look\" aria-label=\"現在のコーデ\"></div>\n    </div>\n  </section>\n\n  <!-- 右: 素材ブラウザ。モバイルではボトムシートになる -->\n  <div class=\"sheet\" id=\"sheet\">\n    <button class=\"sheet__handle\" type=\"button\" id=\"sheet-handle\" aria-expanded=\"true\"\n            aria-controls=\"panel\"><span></span><span class=\"visually-hidden\">素材パネルの開閉</span></button>\n\n    <div class=\"panel\" id=\"panel\">\n      <div class=\"panel__search\">\n        <div class=\"cat-tabs\" role=\"tablist\" aria-label=\"カテゴリ\">\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"true\" data-cat=\"all\"><span class=\"icon\" aria-hidden=\"true\">◆</span>すべて</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"body\"><span class=\"icon\" aria-hidden=\"true\">✦</span>素体</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"hair\"><span class=\"icon\" aria-hidden=\"true\">✂</span>ヘア</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"face\"><span class=\"icon\" aria-hidden=\"true\">◕</span>表情</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"dress\"><span class=\"icon\" aria-hidden=\"true\">◈</span>ワンピース</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"top\"><span class=\"icon\" aria-hidden=\"true\">▣</span>トップス</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"bottom\"><span class=\"icon\" aria-hidden=\"true\">▤</span>ボトム</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"socks\"><span class=\"icon\" aria-hidden=\"true\">▮</span>靴下</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"shoes\"><span class=\"icon\" aria-hidden=\"true\">◣</span>シューズ</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"outer\"><span class=\"icon\" aria-hidden=\"true\">▥</span>アウター</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"headwear\"><span class=\"icon\" aria-hidden=\"true\">♤</span>ヘッド</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"accessory\"><span class=\"icon\" aria-hidden=\"true\">❍</span>小物</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"background\"><span class=\"icon\" aria-hidden=\"true\">▢</span>背景</button>\n        </div>\n\n        <div class=\"panel__bar\">\n          <button class=\"btn btn--sm\" type=\"button\" id=\"panel-more\"\n                  aria-expanded=\"false\" aria-controls=\"panel-more-body\">検索・絞り込み ▾</button>\n          <span class=\"panel__meta\"><span id=\"result-count\" class=\"num\">0</span>件\n            <span id=\"active-filters\">条件なし</span></span>\n        </div>\n\n        <div class=\"panel__more\" id=\"panel-more-body\" hidden>\n          <label class=\"visually-hidden\" for=\"part-search\">素材を検索</label>\n          <input class=\"input\" id=\"part-search\" type=\"search\" placeholder=\"名前・タグで検索（すべて一致）\" autocomplete=\"off\">\n\n          <div class=\"filters__row\" id=\"filter-chips\">\n            \n            \n          </div>\n\n          <div class=\"lock-row\" aria-label=\"カテゴリのロック\">\n            <span class=\"index-label\">LOCK</span>\n            <span id=\"lock-chips\"></span>\n          </div>\n\n          <button class=\"btn btn--sm btn--ghost\" type=\"button\" id=\"btn-reset-filter\">条件をクリア</button>\n        </div>\n      </div>\n\n      <div class=\"panel__list\" id=\"panel-list\">\n        \n        \n        <div class=\"empty\">\n          <p class=\"empty__title\">着せ替えできる素材がまだありません</p>\n          <p class=\"empty__body\">管理画面から素体と衣装を登録すると並びます。</p>\n          <p style=\"margin-top:var(--s-5)\"><a class=\"btn btn--primary\" href=\"#/studio/new/\">絵を登録する</a></p>\n        </div>\n        <p class=\"empty\" id=\"parts-empty\" hidden>\n          <span class=\"empty__title\">条件に合う素材がありません</span>\n          <span class=\"empty__body\">条件を1つ外してみてください。</span>\n        </p>\n      </div>\n\n      <aside class=\"part-detail\" id=\"part-detail\" hidden aria-live=\"polite\"></aside>\n    </div>\n  </div>\n</div>\n"},"/closet/":{"title":"CLOSET — 衣装図鑑 | PINK INDEX","chrome":true,"bodyClass":"","overlay":false,"pre":"","main":"\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <span class=\"page-head__no num\">02</span>\n      <h1 class=\"page-head__en\">CLOSET</h1>\n    </div>\n    <p class=\"page-head__jp\">衣装図鑑。着せ替え用のサムネイルである前に、1点ずつの作品として見返せるようにする。</p>\n  </div>\n<div class=\"page section\">\n  <div class=\"empty\">\n    <p class=\"empty__title\">衣装や小物はまだありません</p>\n    <p class=\"empty__body\">管理画面から登録すると、ここに並びます。</p>\n    <p style=\"margin-top:var(--s-5)\"><a class=\"btn btn--primary\" href=\"#/studio/new/\">絵を登録する</a></p>\n  </div>\n</div>\n"},"/girls/":{"title":"GIRLS — 女の子 | PINK INDEX","chrome":true,"bodyClass":"","overlay":false,"pre":"","main":"\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <span class=\"page-head__no num\">03</span>\n      <h1 class=\"page-head__en\">GIRLS</h1>\n    </div>\n    <p class=\"page-head__jp\">図鑑番号を大きく見せる。非公開設定の情報は公開ページに一切出力しない。</p>\n  </div>\n<div class=\"page section\">\n  <div class=\"empty\">\n    <p class=\"empty__title\">女の子はまだありません</p>\n    <p class=\"empty__body\">管理画面から登録すると、ここに並びます。</p>\n    <p style=\"margin-top:var(--s-5)\"><a class=\"btn btn--primary\" href=\"#/studio/new/\">絵を登録する</a></p>\n  </div>\n</div>\n"},"/collections/":{"title":"COLLECTIONS — シリーズ | PINK INDEX","chrome":true,"bodyClass":"","overlay":false,"pre":"","main":"\n\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <span class=\"page-head__no num\">04</span>\n      <h1 class=\"page-head__en\">COLLECTIONS</h1>\n    </div>\n    <p class=\"page-head__jp\">シリーズごとの特集。図鑑の1章を完成させる感覚を作る。</p>\n  </div>\n<div class=\"page section\">\n  <div class=\"card-grid\">\n    <article class=\"card\">\n      <div class=\"card__media card__media--wide\">\n        <a href=\"#/collections/uncategorized/\" tabindex=\"-1\" aria-hidden=\"true\"><img src=\"\" alt=\"\" loading=\"lazy\"></a>\n      </div>\n      <div class=\"card__body\">\n        <p class=\"collection-accent\" style=\"--accent:#FFE8F2\">未分類</p>\n        <h3 class=\"card__name\"><a href=\"#/collections/uncategorized/\">UNCATEGORIZED</a></h3>\n        <p class=\"card__meta\"><span class=\"num\">0</span><span>点収録</span></p>\n      </div>\n    </article>\n  </div>\n</div>\n"},"/collections/uncategorized/":{"title":"UNCATEGORIZED — COLLECTIONS | PINK INDEX","chrome":true,"bodyClass":"","overlay":false,"pre":"","main":"\n\n<div class=\"page collection-hero\">\n  <div class=\"collection-hero__copy\">\n    <p class=\"collection-accent\" style=\"--accent:#FFE8F2\">未分類</p>\n    <h1 class=\"page-head__en\">UNCATEGORIZED</h1>\n    <p>まだ章に分けていない作品と素材。</p>\n    <dl class=\"meta-list\">\n      <dt>開始</dt><dd><time datetime=\"2026-09-02\" class=\"num\">2026.09.02</time></dd>\n      <dt>収録</dt><dd class=\"num\">0</dd>\n    </dl>\n  </div>\n  <div>\n    <img src=\"\" alt=\"UNCATEGORIZEDの代表作品\" loading=\"lazy\">\n  </div>\n</div>\n\n<div class=\"page section\">\n  \n  <div class=\"section-head\" data-reveal>\n    <span class=\"section-head__no num\">—</span>\n    <div class=\"section-head__body\">\n      <h2 class=\"section-head__en\">COMPLETION</h2>\n      <p class=\"section-head__jp\">この章の充足率（作者向けの目標値）</p>\n    </div>\n  </div>\n  <div class=\"counter-row\">\n    <div class=\"progress\">\n        <p><span class=\"num\">0</span> / <span class=\"num\">0</span> 衣装</p>\n        <div class=\"progress__track\"><div class=\"progress__bar\" style=\"width:NaN%\"></div></div>\n        <p class=\"num\">NaN%</p>\n      </div><div class=\"progress\">\n        <p><span class=\"num\">0</span> / <span class=\"num\">0</span> 小物</p>\n        <div class=\"progress__track\"><div class=\"progress__bar\" style=\"width:NaN%\"></div></div>\n        <p class=\"num\">NaN%</p>\n      </div><div class=\"progress\">\n        <p><span class=\"num\">0</span> / <span class=\"num\">0</span> 髪</p>\n        <div class=\"progress__track\"><div class=\"progress__bar\" style=\"width:NaN%\"></div></div>\n        <p class=\"num\">NaN%</p>\n      </div>\n  </div>\n</div>\n\n<div class=\"page\">\n  \n  <div class=\"section\"><div class=\"empty\">\n    <p class=\"empty__title\">この章にはまだ何も入っていません</p>\n    <p class=\"empty__body\">登録するときにこの章を選ぶと並びます。</p>\n  </div></div>\n  \n  \n</div>\n"},"/gallery/":{"title":"GALLERY — 作品 | PINK INDEX","chrome":true,"bodyClass":"","overlay":false,"pre":"","main":"\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <span class=\"page-head__no num\">05</span>\n      <h1 class=\"page-head__en\">GALLERY</h1>\n    </div>\n    <p class=\"page-head__jp\">完成作品。フィルターは初期状態で控えめにし、まず作品を大きく見せる。</p>\n  </div>\n<div class=\"page section\">\n  <div class=\"empty\">\n    <p class=\"empty__title\">完成作品はまだありません</p>\n    <p class=\"empty__body\">管理画面から登録すると、ここに並びます。</p>\n    <p style=\"margin-top:var(--s-5)\"><a class=\"btn btn--primary\" href=\"#/studio/new/\">絵を登録する</a></p>\n  </div>\n</div>\n"},"/updates/":{"title":"更新履歴 — PINK INDEX","chrome":true,"bodyClass":"","overlay":false,"pre":"","main":"\n\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      \n      <h1 class=\"page-head__en\">UPDATE NOTE</h1>\n    </div>\n    <p class=\"page-head__jp\">更新履歴と制作記録</p>\n  </div>\n<div class=\"page section\">\n  <ul class=\"update-note\">\n    \n  </ul>\n</div>\n"},"/studio/":{"title":"ダッシュボード — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","overlay":false,"pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\" aria-current=\"page\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>ダッシュボード</h2>\n    <span class=\"spacer\"></span>\n    <a class=\"btn btn--primary\" href=\"#/studio/new/\">＋ 新規登録</a>\n  </div>\n\n  <div class=\"dash-grid\" id=\"dash-counts\"></div>\n\n  <h3 class=\"index-label\" style=\"margin:var(--s-6) 0 var(--s-3)\"><span class=\"index-label__no\">01</span>最近追加した素材</h3>\n  <ul class=\"layer-list\" id=\"dash-recent\"></ul>\n\n  <div class=\"dash-grid\" style=\"margin-top:var(--s-6)\">\n    <div class=\"dash-card\">\n      <h3>できること</h3>\n      <ul style=\"font-size:var(--t-sm);line-height:2\">\n        <li><a href=\"#/studio/home/\">HOMEのビジュアル</a></li>\n        <li><a href=\"#/studio/texts/\">サイトの文字</a></li>\n        <li><a href=\"#/studio/new/\">絵の登録</a></li>\n        <li><a href=\"#/studio/items/\">素材の管理</a></li>\n        <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n      </ul>\n    </div>\n    <div class=\"dash-card\">\n      <h3>公開サイトへ反映する</h3>\n      <p style=\"font-size:var(--t-sm);color:var(--c-ink-muted);margin:0\">\n        <code>site-data.json</code> に書き出して、サイトのフォルダに置きます。</p>\n      <div class=\"toolbar\">\n        <button class=\"btn btn--sm btn--primary\" type=\"button\" id=\"dash-export\">公開用に書き出す</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"dash-import\">読み込む</button>\n        <input type=\"file\" accept=\"application/json\" id=\"dash-import-file\" hidden>\n      </div>\n      <p class=\"card__meta\"><span>この端末の保存量 <span class=\"num\" id=\"dash-bytes\">—</span></span></p>\n      <button class=\"btn btn--sm\" type=\"button\" id=\"dash-reset\">編集をすべて取り消す</button>\n    </div>\n    <div class=\"dash-card dash-card--isolated\">\n      <h3>Public Metrics（隔離表示）</h3>\n      <p style=\"font-size:var(--t-sm);color:var(--c-ink-muted);margin:0\">\n        閲覧数は目的ではないので、畳んであります。</p>\n      <button class=\"btn btn--sm\" type=\"button\" id=\"metrics-toggle\" aria-expanded=\"false\" aria-controls=\"metrics-body\">表示する</button>\n      <div id=\"metrics-body\" hidden>\n        <p class=\"card__meta\"><span>このデザイン確認用サイトでは計測していません。</span></p>\n      </div>\n    </div>\n  </div></div>\n</div>\n"},"/studio/new/":{"title":"新規登録 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","overlay":false,"pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\" aria-current=\"page\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>新規登録</h2>\n    <span class=\"status-pill\" data-status=\"DRAFT\">未登録</span>\n    <span class=\"spacer\"></span>\n    <span class=\"index-label\" id=\"autosave\">下書き ・ 未変更</span>\n  </div>\n\n  <div class=\"wizard__steps\" role=\"list\">\n    <span class=\"wizard__step\" role=\"listitem\" data-state=\"current\">\n      <span class=\"num\">01</span>種類</span><span class=\"wizard__step\" role=\"listitem\" data-state=\"todo\">\n      <span class=\"num\">02</span>画像</span><span class=\"wizard__step\" role=\"listitem\" data-state=\"todo\">\n      <span class=\"num\">03</span>自動検査</span><span class=\"wizard__step\" role=\"listitem\" data-state=\"todo\">\n      <span class=\"num\">04</span>作品情報</span><span class=\"wizard__step\" role=\"listitem\" data-state=\"todo\">\n      <span class=\"num\">05</span>掲載先</span><span class=\"wizard__step\" role=\"listitem\" data-state=\"todo\">\n      <span class=\"num\">06</span>登録</span>\n  </div>\n\n  <div class=\"wizard\">\n    <form class=\"wizard__form\" id=\"entry-form\" onsubmit=\"return false\">\n      <div class=\"form-row\">\n        <div class=\"field\">\n          <label for=\"kind\">登録するもの</label>\n          <select class=\"select\" id=\"kind\">\n            <option value=\"item\">着せ替え素材（素体・髪・衣装・小物・背景）</option>\n            <option value=\"artwork\">完成作品（GALLERY に置く一枚絵）</option>\n          </select>\n        </div>\n        <div class=\"field\" id=\"cat-field\">\n          <label for=\"e-cat\">カテゴリ</label>\n          <select class=\"select\" id=\"e-cat\"></select>\n          <p class=\"hint\"><a href=\"#/studio/categories/\">カテゴリを自分で追加する</a></p>\n        </div>\n      </div>\n\n      <div class=\"dropzone\" id=\"dropzone\" tabindex=\"0\" role=\"button\" aria-describedby=\"drop-hint\">\n        <p style=\"margin:0\"><strong>画像をここにドロップ / クリックして選ぶ</strong></p>\n        <p class=\"hint\" id=\"drop-hint\" style=\"margin:var(--s-2) 0 0\">\n          PNG（透過）／SVG・推奨 <span class=\"num\">720 × 1080</span>\n        </p>\n        <input type=\"file\" id=\"file-input\" accept=\"image/png,image/svg+xml,image/jpeg,image/webp\" hidden>\n      </div>\n\n      <div>\n        <h3 class=\"index-label\" style=\"margin-bottom:var(--s-2)\"><span class=\"index-label__no\">03</span>自動検査</h3>\n        <ul class=\"checklist\" id=\"inspect\">\n          <li data-ok=\"pending\"><span class=\"mark\">●</span><span>画像を選ぶと検査します</span><span class=\"state\">—</span></li>\n        </ul>\n      </div>\n\n      <div class=\"form-row\">\n        <div class=\"field\"><label for=\"e-name\">名前</label><input class=\"input\" id=\"e-name\" placeholder=\"例：フリルワンピース\"></div>\n        <div class=\"field\"><label for=\"e-date\">制作日</label><input class=\"input\" id=\"e-date\" type=\"date\"></div>\n        <div class=\"field\"><label for=\"e-season\">季節</label>\n          <select class=\"select\" id=\"e-season\"><option>オールシーズン</option><option>春</option><option>夏</option><option>秋</option><option>冬</option></select></div>\n      </div>\n      <div class=\"form-row\">\n        <div class=\"field\"><label for=\"e-series\">シリーズ</label>\n          <select class=\"select\" id=\"e-series\"><option value=\"uncategorized\">UNCATEGORIZED</option></select></div>\n        <div class=\"field\"><label for=\"e-colors\">色（検索用・スペース区切り）</label><input class=\"input\" id=\"e-colors\" placeholder=\"ピンク 白\"></div>\n        <div class=\"field\"><label for=\"e-tags\">タグ（スペース区切り）</label>\n          <input class=\"input\" id=\"e-tags\" list=\"tag-suggest\" placeholder=\"フリル リボン\">\n          <datalist id=\"tag-suggest\"></datalist></div>\n      </div>\n      <fieldset class=\"flavor-fields\">\n        <legend class=\"index-label\">フレーバーテキスト（公開される作品の文章）</legend>\n        <div class=\"field\">\n          <label for=\"e-flavor-short\">短いコピー（一覧に出ます）</label>\n          <input class=\"input\" id=\"e-flavor-short\" maxlength=\"40\" placeholder=\"例：夕暮れに似合う黒\">\n        </div>\n        <div class=\"field\">\n          <label for=\"e-flavor-body\">本文（詳細ページに出ます）</label>\n          <textarea class=\"textarea\" id=\"e-flavor-body\" placeholder=\"例：夕暮れの街に似合う、少しだけ背伸びした黒いワンピース。\"></textarea>\n        </div>\n        <label class=\"check\"><input type=\"checkbox\" id=\"e-flavor-public\" checked> このフレーバーテキストを公開する</label>\n        <p class=\"hint\">空欄可。あとから直せます。</p>\n      </fieldset>\n\n      <div class=\"field\">\n        <label for=\"e-memo\">メモ（作者だけが見る管理用。公開されません）</label>\n        <textarea class=\"textarea\" id=\"e-memo\" placeholder=\"例：裾の重なりを後で調整する\"></textarea>\n      </div>\n\n      <div class=\"publish-bar\">\n        <button class=\"btn\" type=\"button\" id=\"btn-clear-form\">入力をクリア</button>\n        <span class=\"spacer\"></span>\n        <button class=\"btn btn--primary\" type=\"button\" id=\"btn-register\">登録する</button>\n      </div>\n      <p class=\"hint\" id=\"register-note\">登録するとすぐ DRESS UP と CLOSET に出ます。</p>\n    </form>\n\n    <aside class=\"side-preview\" aria-label=\"プレビュー\">\n      <h3 class=\"index-label\"><span class=\"index-label__no\">PV</span>実キャラ上で確認</h3>\n      <div class=\"canvas\" id=\"studio-canvas\" role=\"img\" aria-label=\"登録する素材を重ねたプレビュー\"></div>\n      <div class=\"toolbar\">\n        <button class=\"btn btn--sm\" type=\"button\" id=\"studio-toggle\">新素材の表示/非表示</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"studio-next-look\">別のコーデで確認</button>\n      </div>\n      <p class=\"hint\">重なり順はカテゴリのレイヤーで決まります。</p>\n    </aside>\n  </div></div>\n</div>\n"},"/studio/home/":{"title":"HOMEの編集 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","overlay":false,"pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\" aria-current=\"page\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>HOMEの編集</h2>\n    <span class=\"spacer\"></span>\n    <a class=\"btn\" href=\"#/\" target=\"_blank\" rel=\"noopener\">HOMEを開く</a>\n    <button class=\"btn\" type=\"button\" id=\"home-reset\">初期状態に戻す</button>\n    <button class=\"btn btn--primary\" type=\"button\" id=\"home-add\">＋ 枠を追加</button>\n  </div>\n\n  <p class=\"hint\">上から順に並びます。非公開の枠はHOMEに出ません。</p>\n\n  <div class=\"home-editor\" id=\"home-editor\"></div>\n\n  <h3 style=\"margin-top:var(--s-7)\">HOMEの下に置く区画</h3>\n  <p class=\"hint\">文字を出したくないときは、区画ごと消せます。</p>\n  <div class=\"color-row\" id=\"home-sections\">\n    <label class=\"check\"><input type=\"checkbox\" data-sec=\"index\"> もくじ（INDEX）を出す</label>\n    <label class=\"check\"><input type=\"checkbox\" data-sec=\"archive\"> 点数と更新の記録（ARCHIVE）を出す</label>\n  </div></div>\n</div>\n"},"/studio/texts/":{"title":"サイトの文字 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","overlay":false,"pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\" aria-current=\"page\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>サイトの文字</h2>\n    <span class=\"spacer\"></span>\n    <button class=\"btn\" type=\"button\" id=\"texts-reset\">文字の編集を取り消す</button>\n  </div>\n\n  <p class=\"hint\">画面を見ながら、書き換え・そろえ・非表示。</p>\n\n  <div class=\"texts\">\n    <div class=\"texts__view\">\n      <div class=\"seg\" id=\"texts-pages\">\n        <button class=\"seg__btn\" type=\"button\" data-page=\"/\"\n          aria-pressed=\"true\">HOME</button><button class=\"seg__btn\" type=\"button\" data-page=\"/dressup/\"\n          aria-pressed=\"false\">DRESS UP</button><button class=\"seg__btn\" type=\"button\" data-page=\"/closet/\"\n          aria-pressed=\"false\">CLOSET</button><button class=\"seg__btn\" type=\"button\" data-page=\"/girls/\"\n          aria-pressed=\"false\">GIRLS</button><button class=\"seg__btn\" type=\"button\" data-page=\"/collections/\"\n          aria-pressed=\"false\">COLLECTIONS</button><button class=\"seg__btn\" type=\"button\" data-page=\"/gallery/\"\n          aria-pressed=\"false\">GALLERY</button><button class=\"seg__btn\" type=\"button\" data-page=\"/updates/\"\n          aria-pressed=\"false\">更新履歴</button>\n      </div>\n      <iframe class=\"texts__frame\" id=\"texts-frame\" title=\"編集中のページ\" src=\"/\"></iframe>\n    </div>\n    <div class=\"texts__list\" id=\"texts-list\"></div>\n  </div></div>\n</div>\n"},"/studio/items/":{"title":"素材の管理 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","overlay":false,"pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\" aria-current=\"page\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>素材の管理</h2>\n    <span class=\"spacer\"></span>\n    <a class=\"btn btn--primary\" href=\"#/studio/new/\">＋ 新規登録</a>\n  </div>\n\n  <div class=\"filters__row\" style=\"margin-bottom:var(--s-4)\">\n    <label class=\"visually-hidden\" for=\"items-search\">素材を検索</label>\n    <input class=\"input\" id=\"items-search\" type=\"search\" placeholder=\"名前・番号・タグで検索\" style=\"flex:1 1 240px;max-width:360px\">\n    <label class=\"visually-hidden\" for=\"items-cat\">カテゴリ</label>\n    <select class=\"select\" id=\"items-cat\"></select>\n    <label style=\"font-size:var(--t-sm);display:inline-flex;align-items:center;gap:var(--s-2)\">\n      <input type=\"checkbox\" id=\"items-custom-only\"> 自分で登録したものだけ\n    </label>\n    <span class=\"spacer\"></span>\n    <span class=\"index-label\"><span class=\"num\" id=\"items-count\">0</span> 件</span>\n  </div>\n\n  <ul class=\"layer-list\" id=\"items-list\"></ul>\n  <p class=\"empty\" id=\"items-empty\" hidden>\n    <span class=\"empty__title\">条件に合う素材がありません</span>\n    <span class=\"empty__body\">条件を外すか、新規登録から追加します。</span>\n  </p></div>\n</div>\n"},"/studio/categories/":{"title":"カテゴリ — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","overlay":false,"pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\" aria-current=\"page\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>カテゴリ</h2>\n    <span class=\"spacer\"></span>\n  </div>\n\n  <p class=\"hint\">分類・重なり順・同時に着けられる数をまとめて決めます。</p>\n\n  <form class=\"dash-card\" id=\"cat-form\" onsubmit=\"return false\" style=\"max-width:56em;margin-block:var(--s-5)\">\n    <h3>カテゴリを追加する</h3>\n    <div class=\"form-row\">\n      <div class=\"field\"><label for=\"c-name\">名前</label><input class=\"input\" id=\"c-name\" placeholder=\"例：しっぽ\"></div>\n      <div class=\"field\"><label for=\"c-icon\">記号（1文字）</label><input class=\"input\" id=\"c-icon\" maxlength=\"2\" placeholder=\"◇\"></div>\n      <div class=\"field\">\n        <label for=\"c-layer\">描画レイヤー（重なり順）</label>\n        <select class=\"select\" id=\"c-layer\">\n          <option value=\"BACKGROUND\">010 背景（BACKGROUND）</option><option value=\"OUTER_BACK\">020 アウター(後)（OUTER_BACK）</option><option value=\"HAIR_BACK\">030 髪(後)（HAIR_BACK）</option><option value=\"BODY\">040 素体（BODY）</option><option value=\"INNER\">050 インナー（INNER）</option><option value=\"SOCKS\">055 靴下（SOCKS）</option><option value=\"BOTTOM\">060 ボトム（BOTTOM）</option><option value=\"TOP\">070 トップス（TOP）</option><option value=\"DRESS\">075 ワンピース（DRESS）</option><option value=\"SHOES\">080 靴（SHOES）</option><option value=\"OUTER_BODY\">085 アウター(胴)（OUTER_BODY）</option><option value=\"FACE\">090 表情（FACE）</option><option value=\"HAIR_FRONT\">100 髪(前)（HAIR_FRONT）</option><option value=\"HEADWEAR\">110 帽子・髪飾り（HEADWEAR）</option><option value=\"FRONT_ACCESSORY\">120 小物(手前)（FRONT_ACCESSORY）</option>\n        </select>\n      </div>\n      <div class=\"field\">\n        <label for=\"c-capacity\">同時に着けられる数</label>\n        <select class=\"select\" id=\"c-capacity\"><option value=\"1\">1つだけ</option><option value=\"2\">2つまで</option><option value=\"3\">3つまで</option></select>\n      </div>\n    </div>\n    <div class=\"publish-bar\">\n      <span class=\"spacer\"></span>\n      <button class=\"btn btn--primary\" type=\"button\" id=\"cat-add\">追加する</button>\n    </div>\n  </form>\n\n  <h3 class=\"index-label\" style=\"margin:var(--s-6) 0 var(--s-3)\"><span class=\"index-label__no\">01</span>カテゴリ一覧</h3>\n  <ul class=\"layer-list\" id=\"cat-list\"></ul></div>\n</div>\n"},"/studio/gallery/":{"title":"作品の管理 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","overlay":false,"pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\" aria-current=\"page\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>作品（GALLERY）</h2>\n    <span class=\"spacer\"></span>\n    <a class=\"btn btn--primary\" href=\"#/studio/new/\">＋ 作品を登録</a>\n  </div>\n  <div class=\"filters__row\" style=\"margin-bottom:var(--s-4)\">\n    <label class=\"visually-hidden\" for=\"art-search\">作品を検索</label>\n    <input class=\"input\" id=\"art-search\" type=\"search\" placeholder=\"作品名で検索\" style=\"flex:1 1 240px;max-width:360px\">\n    <span class=\"spacer\"></span>\n    <span class=\"index-label\"><span class=\"num\" id=\"art-count\">0</span> 点</span>\n  </div>\n  <div class=\"card-grid\" id=\"art-list\"></div>\n  <p class=\"empty\" id=\"art-empty\" hidden>\n    <span class=\"empty__title\">作品がありません</span>\n    <span class=\"empty__body\">新規登録から一枚絵を追加できます。</span>\n  </p></div>\n</div>\n"}}</script>
+<script id="routes" type="application/json">{"/":{"title":"PINK INDEX","chrome":true,"bodyClass":"","pre":"<div class=\"loader\" id=\"loader\" data-state=\"load\" role=\"dialog\" aria-modal=\"true\" aria-label=\"読み込み中\">\n  <div class=\"loader__top\">\n    <span>PINK INDEX</span>\n    <span>ILLUSTRATION ARCHIVE</span>\n  </div>\n  <p class=\"loader__count\" aria-hidden=\"true\">\n    <span class=\"loader__range\">01—100</span>\n    <span class=\"loader__digits loader__digits--l\" id=\"loader-d1\">0</span><span\n          class=\"loader__digits loader__digits--r\" id=\"loader-d2\">0</span>\n    <span class=\"loader__pct\">%</span>\n  </p>\n  <p class=\"visually-hidden\" id=\"loader-status\" aria-live=\"polite\">サイトを読み込んでいます 0%</p>\n</div>\n<div class=\"perimeter\" id=\"perimeter\" aria-hidden=\"true\">\n  <svg preserveAspectRatio=\"none\" id=\"perimeter-svg\">\n    <rect class=\"perimeter__track\" id=\"perimeter-track\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <rect class=\"perimeter__line\" id=\"perimeter-line\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <circle class=\"perimeter__tip\" id=\"perimeter-tip\" r=\"3.5\" cx=\"0\" cy=\"0\"></circle>\n  </svg>\n</div>\n<div class=\"home-frame\" id=\"home-frame\"></div>","main":"\n<div id=\"home-slots\">\n\n  <section class=\"hs hs--hero\" style=\"--hs-bg:#FFF9FC;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-ax:start;--hs-ay:center\">\n    <div class=\"kv\" data-kv>\n      <div class=\"kv__track\" id=\"kv-track\" tabindex=\"0\"\n           role=\"group\" aria-roledescription=\"カルーセル\" aria-label=\"キービジュアル\">\n        \n        <article class=\"kv__slide\" style=\"--hs-bg:#FFE8F2;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-ax:start;--hs-ay:center\" data-kv-slide=\"0\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"1 / 3｜2026 AUTUMN COLLECTION — PINK INDEX\">\n          \n          <div class=\"hs__free\">\n            <div class=\"hs__type hs__type--hero\"><p class=\"hs__eyebrow\">2026 AUTUMN COLLECTION</p>\n      <h1 class=\"hs__title\">PINK INDEX</h1>\n      <p class=\"hs__sub\">NEW VISUAL — SEPTEMBER 2026</p>\n      \n      <a class=\"hs__link\" href=\"#/dressup/\">START DRESSING</a></div>\n          </div>\n        </article>\n        <article class=\"kv__slide\" style=\"--hs-bg:#FFFBF4;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:100%;--hs-ty:0%;--hs-tw:40%;--hs-align:right;--hs-ax:start;--hs-ay:center\" data-kv-slide=\"1\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"2 / 3｜LOOK 02\">\n          \n          <div class=\"hs__free\">\n            <div class=\"hs__type hs__type--hero\"><p class=\"hs__eyebrow\">LOOK 02</p>\n      \n      \n      \n      <a class=\"hs__link\" href=\"#/gallery/\">作品を見る</a></div>\n          </div>\n        </article>\n        <article class=\"kv__slide\" style=\"--hs-bg:#2B2540;--hs-fg:#FFFBF4;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:50%;--hs-ty:50%;--hs-tw:50%;--hs-align:center;--hs-ax:start;--hs-ay:center\" data-kv-slide=\"2\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"3 / 3｜LOOK 03\">\n          \n          <div class=\"hs__free\">\n            <div class=\"hs__type hs__type--hero\"><p class=\"hs__eyebrow\">LOOK 03</p>\n      \n      \n      \n      <a class=\"hs__link\" href=\"#/closet/\">衣装を見る</a></div>\n          </div>\n        </article>\n      </div>\n\n      <button class=\"kv__arrow kv__arrow--prev\" type=\"button\" data-kv-prev aria-label=\"前のビジュアル\">\n        <span aria-hidden=\"true\"></span>\n      </button>\n      <button class=\"kv__arrow kv__arrow--next\" type=\"button\" data-kv-next aria-label=\"次のビジュアル\">\n        <span aria-hidden=\"true\"></span>\n      </button>\n\n      <ol class=\"kv__dots\">\n        <li><button type=\"button\" data-kv-go=\"0\"\n          aria-label=\"1枚目を見る\" aria-current=\"true\"></button></li><li><button type=\"button\" data-kv-go=\"1\"\n          aria-label=\"2枚目を見る\"></button></li><li><button type=\"button\" data-kv-go=\"2\"\n          aria-label=\"3枚目を見る\"></button></li>\n      </ol>\n    </div>\n  </section>\n</div>\n"},"/dressup/":{"title":"DRESS UP — PINK INDEX","chrome":true,"bodyClass":"app-screen","pre":"","main":"\n\n<h1 class=\"visually-hidden\">DRESS UP — 素材を選んで1着を作る</h1>\n<div class=\"dressup\" id=\"dressup\" data-view=\"normal\">\n\n  <!-- 左: 白い展示台としてのプレビュー -->\n  <section class=\"stage\" aria-label=\"プレビュー\">\n    <div class=\"stage__bar toolbar\">\n      <a class=\"btn btn--sm btn--ghost\" href=\"#/\">← HOME</a>\n      <label class=\"visually-hidden\" for=\"look-name\">コーデ名</label>\n      <input class=\"stage__name\" id=\"look-name\" type=\"text\" value=\"名前のないコーデ\" maxlength=\"40\">\n      <span class=\"spacer\"></span>\n      <span class=\"stage__actions\" id=\"stage-actions\">\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-share\">共有URL</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-export\">書き出し</button>\n        <button class=\"btn btn--sm btn--primary\" type=\"button\" id=\"btn-save\">保存</button>\n      </span>\n    </div>\n\n    <div class=\"canvas\" id=\"canvas\" role=\"img\"\n         aria-label=\"現在のコーデのプレビュー\" data-w=\"720\" data-h=\"1080\">\n      <!-- レイヤーは client/dressup.js が baseOrder 順に描画する -->\n    </div>\n\n    <div class=\"stage__foot\">\n      <div class=\"toolbar\" id=\"stage-toolbar\">\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-undo\" disabled>↩ 戻す</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-redo\" disabled>↪ やり直す</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"btn-clear\">全解除</button>\n      </div>\n      <p class=\"conflict\" id=\"conflict\" hidden></p>\n      <div class=\"current-look\" id=\"current-look\" aria-label=\"現在のコーデ\"></div>\n    </div>\n  </section>\n\n  <!-- 右: 素材ブラウザ。モバイルではボトムシートになる -->\n  <div class=\"sheet\" id=\"sheet\">\n    <button class=\"sheet__handle\" type=\"button\" id=\"sheet-handle\" aria-expanded=\"true\"\n            aria-controls=\"panel\"><span></span><span class=\"visually-hidden\">素材パネルの開閉</span></button>\n\n    <div class=\"panel\" id=\"panel\">\n      <div class=\"panel__search\">\n        <div class=\"cat-tabs\" role=\"tablist\" aria-label=\"カテゴリ\">\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"true\" data-cat=\"all\"><span class=\"icon\" aria-hidden=\"true\">◆</span>すべて</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"body\"><span class=\"icon\" aria-hidden=\"true\">✦</span>素体</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"hair\"><span class=\"icon\" aria-hidden=\"true\">✂</span>ヘア</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"face\"><span class=\"icon\" aria-hidden=\"true\">◕</span>表情</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"dress\"><span class=\"icon\" aria-hidden=\"true\">◈</span>ワンピース</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"top\"><span class=\"icon\" aria-hidden=\"true\">▣</span>トップス</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"bottom\"><span class=\"icon\" aria-hidden=\"true\">▤</span>ボトム</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"socks\"><span class=\"icon\" aria-hidden=\"true\">▮</span>靴下</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"shoes\"><span class=\"icon\" aria-hidden=\"true\">◣</span>シューズ</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"outer\"><span class=\"icon\" aria-hidden=\"true\">▥</span>アウター</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"headwear\"><span class=\"icon\" aria-hidden=\"true\">♤</span>ヘッド</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"accessory\"><span class=\"icon\" aria-hidden=\"true\">❍</span>小物</button>\n          <button class=\"cat-tab\" role=\"tab\" aria-selected=\"false\" data-cat=\"background\"><span class=\"icon\" aria-hidden=\"true\">▢</span>背景</button>\n        </div>\n\n        <div class=\"panel__bar\">\n          <button class=\"btn btn--sm\" type=\"button\" id=\"panel-more\"\n                  aria-expanded=\"false\" aria-controls=\"panel-more-body\">検索・絞り込み ▾</button>\n          <span class=\"panel__meta\"><span id=\"result-count\" class=\"num\">0</span>件\n            <span id=\"active-filters\">条件なし</span></span>\n        </div>\n\n        <div class=\"panel__more\" id=\"panel-more-body\" hidden>\n          <label class=\"visually-hidden\" for=\"part-search\">素材を検索</label>\n          <input class=\"input\" id=\"part-search\" type=\"search\" placeholder=\"名前・タグで検索（すべて一致）\" autocomplete=\"off\">\n\n          <div class=\"filters__row\" id=\"filter-chips\">\n            \n            \n          </div>\n\n          <div class=\"lock-row\" aria-label=\"カテゴリのロック\">\n            <span class=\"index-label\">LOCK</span>\n            <span id=\"lock-chips\"></span>\n          </div>\n\n          <button class=\"btn btn--sm btn--ghost\" type=\"button\" id=\"btn-reset-filter\">条件をクリア</button>\n        </div>\n      </div>\n\n      <div class=\"panel__list\" id=\"panel-list\">\n        \n        <p class=\"coming\">COMING SOON</p>\n        <p class=\"empty\" id=\"parts-empty\" hidden>\n          <span class=\"empty__title\">条件に合う素材がありません</span>\n          <span class=\"empty__body\">条件を1つ外してみてください。</span>\n        </p>\n      </div>\n\n      <aside class=\"part-detail\" id=\"part-detail\" hidden aria-live=\"polite\"></aside>\n    </div>\n  </div>\n</div>\n"},"/closet/":{"title":"CLOSET — 衣装図鑑 | PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">CLOSET</h1>\n    </div>\n    \n  </div>\n<div class=\"page section\">\n  <p class=\"coming\">COMING SOON</p>\n</div>\n"},"/girls/":{"title":"GIRLS — 女の子 | PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">GIRLS</h1>\n    </div>\n    \n  </div>\n<div class=\"page section\">\n  <p class=\"coming\">COMING SOON</p>\n</div>\n"},"/collections/":{"title":"COLLECTIONS — シリーズ | PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">COLLECTIONS</h1>\n    </div>\n    \n  </div>\n<div class=\"page section\">\n  <div class=\"card-grid\">\n    <article class=\"card\">\n      <div class=\"card__media card__media--wide\">\n        <a href=\"#/collections/uncategorized/\" tabindex=\"-1\" aria-hidden=\"true\"><img src=\"\" alt=\"\" loading=\"lazy\"></a>\n      </div>\n      <div class=\"card__body\">\n        <p class=\"collection-accent\" style=\"--accent:#FFE8F2\">未分類</p>\n        <h3 class=\"card__name\"><a href=\"#/collections/uncategorized/\">UNCATEGORIZED</a></h3>\n        <p class=\"card__meta\"><span class=\"num\">0</span><span>点収録</span></p>\n      </div>\n    </article>\n  </div>\n</div>\n"},"/collections/uncategorized/":{"title":"UNCATEGORIZED — COLLECTIONS | PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n<div class=\"page collection-hero\">\n  <div class=\"collection-hero__copy\">\n    <p class=\"collection-accent\" style=\"--accent:#FFE8F2\">未分類</p>\n    <h1 class=\"page-head__en\">UNCATEGORIZED</h1>\n    <p>まだ章に分けていない作品と素材。</p>\n    <dl class=\"meta-list\">\n      <dt>開始</dt><dd><time datetime=\"2026-09-02\" class=\"num\">2026.09.02</time></dd>\n      <dt>収録</dt><dd class=\"num\">0</dd>\n    </dl>\n  </div>\n  <div>\n    <img src=\"\" alt=\"UNCATEGORIZEDの代表作品\" loading=\"lazy\">\n  </div>\n</div>\n\n<div class=\"page section\">\n  \n  <div class=\"section-head\" data-reveal>\n    <span class=\"section-head__no num\">—</span>\n    <div class=\"section-head__body\">\n      <h2 class=\"section-head__en\">COMPLETION</h2>\n      <p class=\"section-head__jp\">この章の充足率（作者向けの目標値）</p>\n    </div>\n  </div>\n  <div class=\"counter-row\">\n    <div class=\"progress\">\n        <p><span class=\"num\">0</span> / <span class=\"num\">0</span> 衣装</p>\n        <div class=\"progress__track\"><div class=\"progress__bar\" style=\"width:NaN%\"></div></div>\n        <p class=\"num\">NaN%</p>\n      </div><div class=\"progress\">\n        <p><span class=\"num\">0</span> / <span class=\"num\">0</span> 小物</p>\n        <div class=\"progress__track\"><div class=\"progress__bar\" style=\"width:NaN%\"></div></div>\n        <p class=\"num\">NaN%</p>\n      </div><div class=\"progress\">\n        <p><span class=\"num\">0</span> / <span class=\"num\">0</span> 髪</p>\n        <div class=\"progress__track\"><div class=\"progress__bar\" style=\"width:NaN%\"></div></div>\n        <p class=\"num\">NaN%</p>\n      </div>\n  </div>\n</div>\n\n<div class=\"page\">\n  \n  <div class=\"section\"><div class=\"empty\">\n    <p class=\"empty__title\">この章にはまだ何も入っていません</p>\n    <p class=\"empty__body\">登録するときにこの章を選ぶと並びます。</p>\n  </div></div>\n  \n  \n</div>\n"},"/gallery/":{"title":"GALLERY — 作品 | PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">GALLERY</h1>\n    </div>\n    \n  </div>\n<div class=\"page section\">\n  <p class=\"coming\">COMING SOON</p>\n</div>\n"},"/terms/":{"title":"TERMS — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n<div class=\"page doc\">\n  <h1 class=\"doc__title\">TERMS</h1>\n  <p class=\"doc__sub\">利用条件</p>\n  \n  <section class=\"doc__section\">\n    <h2>作品</h2>\n    <ul><li>掲載しているイラスト・文章の権利は制作者にあります。</li><li>私的な範囲での閲覧は自由です。</li><li>再配布、素材としての利用、AI学習への利用は認めていません。</li></ul>\n  </section>\n  <section class=\"doc__section\">\n    <h2>着せ替え</h2>\n    <ul><li>作ったコーディネートの共有URLと画像は、個人の範囲で自由に使えます。</li><li>素材を切り出して別の作品に流用することはできません。</li></ul>\n  </section>\n  <section class=\"doc__section\">\n    <h2>変更</h2>\n    <ul><li>内容を変えるときは、このページを更新します。</li></ul>\n  </section>\n</div>\n"},"/privacy/":{"title":"PRIVACY — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n<div class=\"page doc\">\n  <h1 class=\"doc__title\">PRIVACY</h1>\n  <p class=\"doc__sub\">個人情報の扱い</p>\n  \n  <section class=\"doc__section\">\n    <h2>集めていないもの</h2>\n    <ul><li>アカウント登録はありません。氏名や連絡先を集めていません。</li><li>行動追跡のためのCookie・広告IDは使っていません。</li></ul>\n  </section>\n  <section class=\"doc__section\">\n    <h2>端末に残るもの</h2>\n    <ul><li>作ったコーディネートやお気に入りは、閲覧している端末のブラウザにだけ保存されます。</li><li>ブラウザの保存領域を消すと、その内容も消えます。</li></ul>\n  </section>\n  <section class=\"doc__section\">\n    <h2>外部送信</h2>\n    <ul><li>この画面から第三者へ情報を送っていません。</li></ul>\n  </section>\n</div>\n"},"/contact/":{"title":"CONTACT — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n<div class=\"page doc\">\n  <h1 class=\"doc__title\">CONTACT</h1>\n  <p class=\"doc__sub\">お問い合わせ</p>\n  \n  <section class=\"doc__section\">\n    <h2>連絡</h2>\n    <ul><li>作品の利用相談、掲載の指摘、不具合の報告を受け付けます。</li><li>連絡先は準備中です。決まりしだいここに載せます。</li></ul>\n  </section>\n</div>\n"},"/studio/":{"title":"ダッシュボード — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\" aria-current=\"page\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>ダッシュボード</h2>\n    <span class=\"spacer\"></span>\n    <a class=\"btn btn--primary\" href=\"#/studio/new/\">＋ 新規登録</a>\n  </div>\n\n  <div class=\"dash-grid\" id=\"dash-counts\"></div>\n\n  <h3 class=\"index-label\" style=\"margin:var(--s-6) 0 var(--s-3)\"><span class=\"index-label__no\">01</span>最近追加した素材</h3>\n  <ul class=\"layer-list\" id=\"dash-recent\"></ul>\n\n  <div class=\"dash-grid\" style=\"margin-top:var(--s-6)\">\n    <div class=\"dash-card\">\n      <h3>できること</h3>\n      <ul style=\"font-size:var(--t-sm);line-height:2\">\n        <li><a href=\"#/studio/home/\">HOMEのビジュアル</a></li>\n        <li><a href=\"#/studio/texts/\">サイトの文字</a></li>\n        <li><a href=\"#/studio/new/\">絵の登録</a></li>\n        <li><a href=\"#/studio/items/\">素材の管理</a></li>\n        <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n      </ul>\n    </div>\n    <div class=\"dash-card\">\n      <h3>公開サイトへ反映する</h3>\n      <p style=\"font-size:var(--t-sm);color:var(--c-ink-muted);margin:0\">\n        <code>site-data.json</code> に書き出して、サイトのフォルダに置きます。</p>\n      <div class=\"toolbar\">\n        <button class=\"btn btn--sm btn--primary\" type=\"button\" id=\"dash-export\">公開用に書き出す</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"dash-import\">読み込む</button>\n        <input type=\"file\" accept=\"application/json\" id=\"dash-import-file\" hidden>\n      </div>\n      <p class=\"card__meta\"><span>この端末の保存量 <span class=\"num\" id=\"dash-bytes\">—</span></span></p>\n      <button class=\"btn btn--sm\" type=\"button\" id=\"dash-reset\">編集をすべて取り消す</button>\n    </div>\n    <div class=\"dash-card dash-card--isolated\">\n      <h3>Public Metrics（隔離表示）</h3>\n      <p style=\"font-size:var(--t-sm);color:var(--c-ink-muted);margin:0\">\n        閲覧数は目的ではないので、畳んであります。</p>\n      <button class=\"btn btn--sm\" type=\"button\" id=\"metrics-toggle\" aria-expanded=\"false\" aria-controls=\"metrics-body\">表示する</button>\n      <div id=\"metrics-body\" hidden>\n        <p class=\"card__meta\"><span>このデザイン確認用サイトでは計測していません。</span></p>\n      </div>\n    </div>\n  </div></div>\n</div>\n"},"/studio/new/":{"title":"新規登録 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\" aria-current=\"page\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>新規登録</h2>\n    <span class=\"spacer\"></span>\n    <span class=\"index-label\" id=\"autosave\">未変更</span>\n  </div>\n\n  <div class=\"wizard\">\n    <form class=\"wizard__form\" id=\"entry-form\" onsubmit=\"return false\">\n      <div class=\"dropzone\" id=\"dropzone\" tabindex=\"0\" role=\"button\" aria-describedby=\"drop-hint\">\n        <p style=\"margin:0\"><strong>画像をドロップ / クリックして選ぶ</strong></p>\n        <p class=\"hint\" id=\"drop-hint\" style=\"margin:var(--s-2) 0 0\">PNG・SVG／<span class=\"num\">720 × 1080</span></p>\n        <input type=\"file\" id=\"file-input\" accept=\"image/png,image/svg+xml,image/jpeg,image/webp\" hidden>\n      </div>\n\n      <ul class=\"checklist\" id=\"inspect\" hidden></ul>\n\n      <div class=\"form-row\">\n        <div class=\"field\"><label for=\"e-name\">名前</label><input class=\"input\" id=\"e-name\" placeholder=\"フリルワンピース\"></div>\n        <div class=\"field\">\n          <label for=\"kind\">種類</label>\n          <select class=\"select\" id=\"kind\">\n            <option value=\"item\">着せ替え素材</option>\n            <option value=\"artwork\">完成作品</option>\n          </select>\n        </div>\n        <div class=\"field\" id=\"cat-field\">\n          <label for=\"e-cat\">カテゴリ</label>\n          <select class=\"select\" id=\"e-cat\"></select>\n        </div>\n      </div>\n\n      <fieldset class=\"vis-fields\">\n        <legend class=\"index-label\">公開状態</legend>\n        <label class=\"check\"><input type=\"checkbox\" id=\"e-vis-archive\"> PUBLIC ・ 図鑑とギャラリーに出す</label>\n        <label class=\"check\"><input type=\"checkbox\" id=\"e-vis-dressup\"> DRESS-UP ・ 着せ替えで使う</label>\n        <p class=\"hint\" id=\"vis-note\">どちらも外すと PRIVATE（自分だけ）</p>\n      </fieldset>\n\n      <details class=\"fine\" id=\"entry-more\">\n        <summary>詳細設定</summary>\n        <div class=\"form-row\">\n          <div class=\"field\"><label for=\"e-date\">制作日</label><input class=\"input\" id=\"e-date\" type=\"date\"></div>\n          <div class=\"field\"><label for=\"e-season\">季節</label>\n            <select class=\"select\" id=\"e-season\"><option>オールシーズン</option><option>春</option><option>夏</option><option>秋</option><option>冬</option></select></div>\n          <div class=\"field\"><label for=\"e-series\">シリーズ</label>\n            <select class=\"select\" id=\"e-series\"><option value=\"uncategorized\">UNCATEGORIZED</option></select></div>\n        </div>\n        <div class=\"field\">\n          <label for=\"e-colors\">色</label>\n          <div class=\"chips-input\" id=\"colors-input\" data-chips=\"colors\">\n            <span class=\"chips-input__list\"></span>\n            <input class=\"input\" id=\"e-colors\" placeholder=\"色を足す\" list=\"color-suggest\" autocomplete=\"off\">\n            <datalist id=\"color-suggest\"></datalist>\n          </div>\n        </div>\n        <div class=\"field\">\n          <label for=\"e-tags\">タグ</label>\n          <div class=\"chips-input\" id=\"tags-input\" data-chips=\"tags\">\n            <span class=\"chips-input__list\"></span>\n            <input class=\"input\" id=\"e-tags\" placeholder=\"タグを足す\" list=\"tag-suggest\" autocomplete=\"off\">\n            <datalist id=\"tag-suggest\"></datalist>\n          </div>\n        </div>\n        <div class=\"field\"><label for=\"e-flavor-short\">短いコピー</label>\n          <input class=\"input\" id=\"e-flavor-short\" maxlength=\"40\" placeholder=\"夕暮れに似合う黒\"></div>\n        <div class=\"field\"><label for=\"e-flavor-body\">フレーバーテキスト</label>\n          <textarea class=\"textarea\" id=\"e-flavor-body\"></textarea></div>\n        <label class=\"check\"><input type=\"checkbox\" id=\"e-flavor-public\" checked> フレーバーテキストを公開する</label>\n        <div class=\"field\"><label for=\"e-memo\">管理メモ</label>\n          <textarea class=\"textarea\" id=\"e-memo\"></textarea></div>\n      </details>\n\n      <div class=\"publish-bar\">\n        <button class=\"btn\" type=\"button\" id=\"btn-clear-form\">クリア</button>\n        <span class=\"spacer\"></span>\n        <span class=\"index-label\" id=\"register-summary\">PRIVATE で登録</span>\n        <button class=\"btn btn--primary\" type=\"button\" id=\"btn-register\">登録する</button>\n      </div>\n    </form>\n\n    <aside class=\"side-preview\" aria-label=\"プレビュー\">\n      <h3 class=\"index-label\"><span class=\"index-label__no\">PV</span>プレビュー</h3>\n      <div class=\"canvas\" id=\"studio-canvas\" role=\"img\" aria-label=\"登録する素材を重ねたプレビュー\"></div>\n      <div class=\"toolbar\">\n        <button class=\"btn btn--sm\" type=\"button\" id=\"studio-toggle\">表示 / 非表示</button>\n        <button class=\"btn btn--sm\" type=\"button\" id=\"studio-next-look\">別のコーデ</button>\n      </div>\n    </aside>\n  </div></div>\n</div>\n"},"/studio/home/":{"title":"HOMEの編集 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\" aria-current=\"page\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>HOMEの編集</h2>\n    <span class=\"spacer\"></span>\n    <a class=\"btn\" href=\"#/\" target=\"_blank\" rel=\"noopener\">HOMEを開く</a>\n    <button class=\"btn\" type=\"button\" id=\"home-reset\">初期状態に戻す</button>\n    <button class=\"btn btn--primary\" type=\"button\" id=\"home-add\">＋ 枠を追加</button>\n  </div>\n\n  <p class=\"hint\">上から順に並びます。非公開の枠はHOMEに出ません。</p>\n\n  <div class=\"home-editor\" id=\"home-editor\"></div>\n\n  <h3 class=\"index-label\" style=\"margin:var(--s-7) 0 var(--s-3)\"><span class=\"index-label__no\">LOGO</span>最下部のロゴ</h3>\n  <div class=\"logo-field\" id=\"brand-logo-field\">\n    <div class=\"logo-field__preview\" id=\"brand-logo-preview\"></div>\n    <div class=\"toolbar\">\n      <input type=\"file\" accept=\"image/*\" id=\"brand-logo-file\" class=\"input\" style=\"padding:var(--s-1)\">\n      <button class=\"btn btn--sm\" type=\"button\" id=\"brand-logo-clear\">文字に戻す</button>\n    </div>\n  </div></div>\n</div>\n"},"/studio/texts/":{"title":"サイトの文字 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\" aria-current=\"page\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>サイトの文字</h2>\n    <span class=\"spacer\"></span>\n    <button class=\"btn\" type=\"button\" id=\"texts-reset\">文字の編集を取り消す</button>\n  </div>\n\n  <p class=\"hint\">画面を見ながら、書き換え・そろえ・非表示。</p>\n\n  <div class=\"texts\">\n    <div class=\"texts__view\">\n      <div class=\"seg\" id=\"texts-pages\">\n        <button class=\"seg__btn\" type=\"button\" data-page=\"/\"\n          aria-pressed=\"true\">HOME</button><button class=\"seg__btn\" type=\"button\" data-page=\"/dressup/\"\n          aria-pressed=\"false\">DRESS UP</button><button class=\"seg__btn\" type=\"button\" data-page=\"/closet/\"\n          aria-pressed=\"false\">CLOSET</button><button class=\"seg__btn\" type=\"button\" data-page=\"/girls/\"\n          aria-pressed=\"false\">GIRLS</button><button class=\"seg__btn\" type=\"button\" data-page=\"/collections/\"\n          aria-pressed=\"false\">COLLECTIONS</button><button class=\"seg__btn\" type=\"button\" data-page=\"/gallery/\"\n          aria-pressed=\"false\">GALLERY</button>\n      </div>\n      <iframe class=\"texts__frame\" id=\"texts-frame\" title=\"編集中のページ\" src=\"/\"></iframe>\n    </div>\n    <div class=\"texts__list\" id=\"texts-list\"></div>\n  </div></div>\n</div>\n"},"/studio/items/":{"title":"素材の管理 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\" aria-current=\"page\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>素材の管理</h2>\n    <span class=\"spacer\"></span>\n    <a class=\"btn btn--primary\" href=\"#/studio/new/\">＋ 新規登録</a>\n  </div>\n\n  <div class=\"filters__row\" style=\"margin-bottom:var(--s-4)\">\n    <label class=\"visually-hidden\" for=\"items-search\">素材を検索</label>\n    <input class=\"input\" id=\"items-search\" type=\"search\" placeholder=\"名前・番号・タグで検索\" style=\"flex:1 1 240px;max-width:360px\">\n    <label class=\"visually-hidden\" for=\"items-cat\">カテゴリ</label>\n    <select class=\"select\" id=\"items-cat\"></select>\n    <label style=\"font-size:var(--t-sm);display:inline-flex;align-items:center;gap:var(--s-2)\">\n      <input type=\"checkbox\" id=\"items-custom-only\"> 自分で登録したものだけ\n    </label>\n    <span class=\"spacer\"></span>\n    <span class=\"index-label\"><span class=\"num\" id=\"items-count\">0</span> 件</span>\n  </div>\n\n  <ul class=\"layer-list\" id=\"items-list\"></ul>\n  <p class=\"empty\" id=\"items-empty\" hidden>\n    <span class=\"empty__title\">条件に合う素材がありません</span>\n    <span class=\"empty__body\">条件を外すか、新規登録から追加します。</span>\n  </p></div>\n</div>\n"},"/studio/categories/":{"title":"カテゴリ — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\" aria-current=\"page\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>カテゴリ</h2>\n    <span class=\"spacer\"></span>\n  </div>\n\n  <p class=\"hint\">分類・重なり順・同時に着けられる数をまとめて決めます。</p>\n\n  <form class=\"dash-card\" id=\"cat-form\" onsubmit=\"return false\" style=\"max-width:56em;margin-block:var(--s-5)\">\n    <h3>カテゴリを追加する</h3>\n    <div class=\"form-row\">\n      <div class=\"field\"><label for=\"c-name\">名前</label><input class=\"input\" id=\"c-name\" placeholder=\"例：しっぽ\"></div>\n      <div class=\"field\"><label for=\"c-icon\">記号（1文字）</label><input class=\"input\" id=\"c-icon\" maxlength=\"2\" placeholder=\"◇\"></div>\n      <div class=\"field\">\n        <label for=\"c-layer\">描画レイヤー（重なり順）</label>\n        <select class=\"select\" id=\"c-layer\">\n          <option value=\"BACKGROUND\">010 背景（BACKGROUND）</option><option value=\"OUTER_BACK\">020 アウター(後)（OUTER_BACK）</option><option value=\"HAIR_BACK\">030 髪(後)（HAIR_BACK）</option><option value=\"BODY\">040 素体（BODY）</option><option value=\"INNER\">050 インナー（INNER）</option><option value=\"SOCKS\">055 靴下（SOCKS）</option><option value=\"BOTTOM\">060 ボトム（BOTTOM）</option><option value=\"TOP\">070 トップス（TOP）</option><option value=\"DRESS\">075 ワンピース（DRESS）</option><option value=\"SHOES\">080 靴（SHOES）</option><option value=\"OUTER_BODY\">085 アウター(胴)（OUTER_BODY）</option><option value=\"FACE\">090 表情（FACE）</option><option value=\"HAIR_FRONT\">100 髪(前)（HAIR_FRONT）</option><option value=\"HEADWEAR\">110 帽子・髪飾り（HEADWEAR）</option><option value=\"FRONT_ACCESSORY\">120 小物(手前)（FRONT_ACCESSORY）</option>\n        </select>\n      </div>\n      <div class=\"field\">\n        <label for=\"c-capacity\">同時に着けられる数</label>\n        <select class=\"select\" id=\"c-capacity\"><option value=\"1\">1つだけ</option><option value=\"2\">2つまで</option><option value=\"3\">3つまで</option></select>\n      </div>\n    </div>\n    <div class=\"publish-bar\">\n      <span class=\"spacer\"></span>\n      <button class=\"btn btn--primary\" type=\"button\" id=\"cat-add\">追加する</button>\n    </div>\n  </form>\n\n  <h3 class=\"index-label\" style=\"margin:var(--s-6) 0 var(--s-3)\"><span class=\"index-label__no\">01</span>カテゴリ一覧</h3>\n  <ul class=\"layer-list\" id=\"cat-list\"></ul></div>\n</div>\n"},"/studio/gallery/":{"title":"作品の管理 — STUDIO | PINK INDEX","chrome":false,"bodyClass":"","pre":"","main":"\n<div class=\"studio\">\n\n  <nav class=\"studio__nav\" aria-label=\"管理メニュー\">\n    <h1><a href=\"#/\">PINK INDEX</a> STUDIO</h1>\n    <ul>\n      \n      <li><a href=\"#/studio/\">ダッシュボード</a></li>\n      <li><a href=\"#/studio/new/\">＋ 新規登録</a></li><li class=\"group index-label\">見せかた</li>\n      <li><a href=\"#/studio/home/\">HOMEの編集</a></li>\n      <li><a href=\"#/studio/texts/\">サイトの文字</a></li><li class=\"group index-label\">アーカイブ</li>\n      <li><a href=\"#/studio/items/\">素材の管理</a></li>\n      <li><a href=\"#/studio/gallery/\" aria-current=\"page\">作品（GALLERY）</a></li><li class=\"group index-label\">設定</li>\n      <li><a href=\"#/studio/categories/\">カテゴリ</a></li>\n    </ul>\n    <p class=\"footer-note\" style=\"margin-top:var(--s-6);padding-top:var(--s-4)\">\n      保存先はこの端末。<br>\n      共有はダッシュボードから書き出し。<br>\n      削除は取り消せません。\n    </p>\n  </nav>\n<div class=\"studio__main\">\n  <div class=\"studio__head\">\n    <h2>作品（GALLERY）</h2>\n    <span class=\"spacer\"></span>\n    <a class=\"btn btn--primary\" href=\"#/studio/new/\">＋ 作品を登録</a>\n  </div>\n  <div class=\"filters__row\" style=\"margin-bottom:var(--s-4)\">\n    <label class=\"visually-hidden\" for=\"art-search\">作品を検索</label>\n    <input class=\"input\" id=\"art-search\" type=\"search\" placeholder=\"作品名で検索\" style=\"flex:1 1 240px;max-width:360px\">\n    <span class=\"spacer\"></span>\n    <span class=\"index-label\"><span class=\"num\" id=\"art-count\">0</span> 点</span>\n  </div>\n  <div class=\"card-grid\" id=\"art-list\"></div>\n  <p class=\"empty\" id=\"art-empty\" hidden>\n    <span class=\"empty__title\">作品がありません</span>\n    <span class=\"empty__body\">新規登録から一枚絵を追加できます。</span>\n  </p></div>\n</div>\n"}}</script>
 <script id="assets" type="application/json">{}</script>
 <script>
 /* --- ルーター ---------------------------------------------
@@ -1775,9 +1831,6 @@ window.PINK_ASSETS = JSON.parse(document.getElementById("assets").textContent);
   document.title = page.title;
   document.body.dataset.chrome = page.chrome ? "on" : "off";
   document.body.className = page.bodyClass || "";
-  // ヘッダーを本文に重ねるのはHOMEだけ。ほかのページでは高さを持たせる
-  var head = document.querySelector(".site-header");
-  if (head) head.classList.toggle("site-header--overlay", Boolean(page.overlay));
   if (page.pre) {
     document.getElementById("pre").innerHTML = page.pre;
     document.body.dataset.loading = "true";
@@ -1933,6 +1986,7 @@ const homeSlots = [
   {
     id: "hs-hero", layout: "hero", order: 1, published: true,
     bg: "#FFF9FC", fg: "#171417",
+    autoplay: false, interval: 6,   // 自動送りは既定で止めておく
     slides: [
       {
         id: "sl-1", eyebrow: "2026 AUTUMN COLLECTION", title: "PINK INDEX",
@@ -1959,13 +2013,6 @@ const homeSlots = [
     ],
   },
 ];
-
-/**
- * HOMEの下に置く2つの区画。文字を出したくないときは false にできる。
- *   index   もくじ（DRESS UP / CLOSET / GIRLS / COLLECTIONS / GALLERY）
- *   archive 点数と更新の記録
- */
-const homeSections = { index: true, archive: true };
 
 /**
  * フレーバーテキスト（作品としての文章）。
@@ -2249,7 +2296,6 @@ function lookFromDefault(defaultLook) {
  */
   const builtinArtworks = artworks;
   const builtinHomeSlots = homeSlots;
-  const builtinHomeSections = homeSections;
 
 
 const KEY = "pinkindex.studio.v1";
@@ -2260,7 +2306,7 @@ const EMPTY = () => ({
   overrides: {},   // 配布データへの上書き（名前・フレーバーテキストなど）
   home: null,      // HOMEの並び。未編集なら初期の枠をそのまま使う
   texts: {},       // サイトの文字（文言・そろえ・表示/非表示）
-  homeSections: null,  // HOME下部の区画（もくじ・点数）を出すかどうか
+  brandLogo: "",   // 最下部の巨大ロゴ（画像に差し替えられる）
 });
 
 let memory = null;   // localStorage が使えない環境用
@@ -2279,6 +2325,7 @@ const normalize = (parsed) => ({
   removed: { ...EMPTY().removed, ...(parsed.removed ?? parsed.hidden ?? {}) },
   overrides: parsed.overrides ?? {},
   texts: parsed.texts ?? {},
+  brandLogo: parsed.brandLogo ?? "",
 });
 
 function load() {
@@ -2386,7 +2433,7 @@ const isRemoved = (id) => load().removed.items.includes(id) || load().removed.ar
 /** 現在の状態を着せ替えコアへ反映する */
 function apply() {
   configure({
-    items: visibleItems(),
+    items: dressupItems(),
     categories: mergedCategories(),
     equipSlots: mergedEquipSlots(),
   });
@@ -2410,18 +2457,65 @@ function addCategory({ name, en, icon, layer, capacity = 1 }) {
   return { ok: true, ...result, category: cat };
 }
 
-/** 使っている素材が残っているカテゴリは削除させない */
-function deleteCategory(key) {
+/**
+ * カテゴリを消す。組み込みも消せる。
+ * 使っている素材があるときは件数を返し、force で「素材ごと」消す。
+ */
+function deleteCategory(key, { force = false } = {}) {
   const st = load();
-  if (!st.categories.some((c) => c.key === key)) {
-    return { ok: false, reason: "組み込みのカテゴリは削除できません（素材は1点ずつ削除できます）。" };
-  }
+  const exists = mergedCategories().some((c) => c.key === key);
+  if (!exists) return { ok: false, reason: "このカテゴリは見つかりません。" };
+
   const used = visibleItems().filter((i) => i.cat === key);
-  if (used.length) return { ok: false, reason: `このカテゴリの素材が ${used.length} 点あります。先に素材を削除してください。` };
-  const result = save({ ...st, categories: st.categories.filter((c) => c.key !== key) });
+  if (used.length && !force) {
+    return { ok: false, used: used.length, reason: `このカテゴリの素材が ${used.length} 点あります。` };
+  }
+
+  const ids = new Set(used.map((i) => i.id));
+  const next = {
+    ...st,
+    categories: st.categories.filter((c) => c.key !== key),
+    items: st.items.filter((i) => !ids.has(i.id)),
+    removed: {
+      ...st.removed,
+      categories: [...new Set([...st.removed.categories, key])],
+      // 組み込み側の素材は元を消せないため、削除済みとして記録する
+      items: [...new Set([...st.removed.items, ...used.filter((i) => !st.items.some((x) => x.id === i.id)).map((i) => i.id)])],
+    },
+  };
+  const result = save(next);
   apply();
-  return { ok: true, ...result };
+  return { ok: true, ...result, deletedItems: used.length };
 }
+
+/** そのカテゴリを使っている素材の数（削除前の確認に使う） */
+const categoryUsage = (key) => visibleItems().filter((i) => i.cat === key).length;
+
+/* --- 公開状態 ---------------------------------------------
+   PRIVATE  どこにも出さない（本人だけ）
+   PUBLIC   図鑑・ギャラリーに出す
+   DRESS-UP 着せ替えで使える
+   1点ごとに独立して決める。登録しただけでは公開しない。
+   --------------------------------------------------------- */
+
+const normalizeVis = (v) => ({
+  archive: Boolean(v?.archive),
+  dressup: Boolean(v?.dressup),
+});
+
+/** 表示用のラベル。管理画面の一覧で使う */
+const visLabel = (item) => {
+  const v = item?.vis;
+  if (!v || (!v.archive && !v.dressup)) return "PRIVATE";
+  if (v.archive && v.dressup) return "PUBLIC / DRESS-UP";
+  return v.archive ? "PUBLIC" : "DRESS-UP";
+};
+
+/** 図鑑・ギャラリーに出せるもの */
+const archiveItems = () => visibleItems().filter((i) => i.vis?.archive);
+const archiveArtworks = () => visibleArtworks().filter((a) => a.vis?.archive);
+/** 着せ替えで使えるもの */
+const dressupItems = () => visibleItems().filter((i) => i.vis?.dressup);
 
 /* --- 素材 ------------------------------------------------ */
 
@@ -2435,7 +2529,7 @@ const nextNo = (prefix) => {
  * media は data URL（PNG/SVG）を想定し、この端末の中だけに保存する。
  */
 function addItem({ name, cat, media, layer, tags = [], colors = [], season = "オールシーズン",
-  series = "base-set", memo = "", createdOn, flavor }) {
+  series = "base-set", memo = "", createdOn, flavor, vis }) {
   const st = load();
   if (!name?.trim()) return { ok: false, reason: "名前を入力してください。" };
   if (!media) return { ok: false, reason: "画像を選んでください。" };
@@ -2457,6 +2551,8 @@ function addItem({ name, cat, media, layer, tags = [], colors = [], season = "�
     tags: [...tags], colors: [...colors], season, series,
     createdOn: createdOn || new Date().toISOString().slice(0, 10),
     memo, custom: true,
+    // 公開状態。何も選ばなければ PRIVATE（本人だけ）
+    vis: normalizeVis(vis),
     flavor: flavor ?? { public: true, ja: { short: "", body: "" } },
     pieces: [{ media, layer: resolvedLayer }],
   };
@@ -2465,7 +2561,7 @@ function addItem({ name, cat, media, layer, tags = [], colors = [], season = "�
   return { ok: true, ...result, item };
 }
 
-function addArtwork({ name, media, series = "base-set", tags = [], memo = "", createdOn, flavor }) {
+function addArtwork({ name, media, series = "base-set", tags = [], memo = "", createdOn, flavor, vis }) {
   const st = load();
   if (!name?.trim()) return { ok: false, reason: "作品名を入力してください。" };
   if (!media) return { ok: false, reason: "画像を選んでください。" };
@@ -2473,6 +2569,7 @@ function addArtwork({ name, media, series = "base-set", tags = [], memo = "", cr
     id: `ua-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     no: String(mergedArtworks().length + 1).padStart(3, "0"),
     name: name.trim(), media, series, tags: [...tags], memo,
+    vis: normalizeVis(vis),
     flavor: flavor ?? { public: true, ja: { short: "", body: "" } },
     createdOn: createdOn || new Date().toISOString().slice(0, 10),
     shape: "normal", custom: true,
@@ -2574,22 +2671,13 @@ function moveHomeSlot(id, dir) {
 
 function resetHome() {
   const st = load();
-  const result = save({ ...st, home: null, homeSections: null });
+  const result = save({ ...st, home: null });
   return { ok: true, ...result };
 }
 
 /* --- HOME下部の区画（もくじ・点数） ------------------------ */
 
 /** 文字を出したくないときは、区画ごと消せる */
-const homeSectionsAll = () => ({ ...builtinHomeSections, ...(load().homeSections ?? {}) });
-
-function updateHomeSections(patch) {
-  const st = load();
-  const next = { ...homeSectionsAll(), ...patch };
-  const result = save({ ...st, homeSections: next });
-  return { ok: true, ...result, sections: next };
-}
-
 /** HOMEに使える画像の一覧。自分で登録した絵だけが並ぶ */
 function mediaLibrary() {
   const st = load();
@@ -2640,6 +2728,15 @@ function moveHomeSlide(slotId, slideId, dir) {
   if (i < 0 || j < 0 || j >= slides.length) return { ok: false, reason: "これ以上は動かせません。" };
   [slides[i], slides[j]] = [slides[j], slides[i]];
   return updateHomeSlot(slotId, { slides });
+}
+
+/* --- ブランドロゴ -----------------------------------------
+   最下部に置く大きなロゴ。画像を入れれば組み文字と差し替わる。
+   --------------------------------------------------------- */
+const brandLogo = () => load().brandLogo ?? "";
+function setBrandLogo(media) {
+  const st = load();
+  return { ok: true, ...save({ ...st, brandLogo: media || "" }) };
 }
 
 /* --- サイトの文字 -----------------------------------------
@@ -2705,7 +2802,7 @@ function stats() {
     removed: st.removed.items.length + st.removed.artworks.length,
     categories: st.categories.length,
     edited: Object.keys(st.overrides ?? {}).length,
-    homeEdited: Boolean(st.home || st.homeSections),
+    homeEdited: Boolean(st.home),
     textsEdited: Object.keys(st.texts ?? {}).length,
     bytes: (() => { try { return JSON.stringify(st).length; } catch { return 0; } })(),
   };
@@ -2769,20 +2866,15 @@ const media = (src, url, cls, loading = "lazy") => (src
        decoding="async"${loading === "eager" ? ' fetchpriority="high"' : ""}>`
   : "");
 
-/** 画像がまだ無いときは、色面と文字だけで成立させる */
-const emptyNote = (o) => (o.media ? "" :
-  `<p class="hs__empty">画像は管理画面から登録します</p>`);
-
 /**
  * 文字のかたまり。
  * showText: false なら1文字も出さない（絵だけの面にする）。
  * 文字を1つも書いていないときも、空の入れ物は置かない。
  */
-const typeBlock = (o, { cls = "hs__type", heading = "h2", note = true } = {}) => {
+const typeBlock = (o, { cls = "hs__type", heading = "h2" } = {}) => {
   if (o.showText === false) return "";
   const body = type(o, { heading }).trim();
-  const tail = note ? emptyNote(o) : "";
-  return body || tail ? `<div class="${cls}">${body}${tail}</div>` : "";
+  return body ? `<div class="${cls}">${body}</div>` : "";
 };
 
 /**
@@ -2805,21 +2897,12 @@ function slideHTML(s, { url = (p) => p, heading = "h2", eager = false, attrs = "
 /** 横スクロールで切り替えるキービジュアル */
 function heroHTML(slot, { url, first }) {
   const slides = (slot.slides ?? []).filter((s) => s.published !== false);
-  if (!slides.length) {
-    return `
-  <section class="hs hs--hero hs--hero-empty" style="${style(slot)}">
-    <div class="hs__type hs__type--hero">
-      <p class="hs__eyebrow">KEY VISUAL</p>
-      <${first ? "h1" : "h2"} class="hs__title">PINK INDEX</${first ? "h1" : "h2"}>
-      <p class="hs__copy">キービジュアルはまだ登録されていません。管理画面のHOMEから、自分の絵を並べてください。</p>
-      <a class="hs__link" href="/studio/home/">HOMEを編集する</a>
-    </div>
-  </section>`;
-  }
+  // 未登録のときは、公開側に案内を出さず区画ごと出さない
+  if (!slides.length) return "";
 
   return `
   <section class="hs hs--hero" style="${style(slot)}">
-    <div class="kv" data-kv>
+    <div class="kv" data-kv${slot.autoplay ? ` data-autoplay="${Math.max(2, Number(slot.interval) || 6)}"` : ""}>
       <div class="kv__track" id="kv-track" tabindex="0"
            role="group" aria-roledescription="カルーセル" aria-label="キービジュアル">
         ${slides.map((s, i) => slideHTML(s, {
@@ -2829,15 +2912,17 @@ function heroHTML(slot, { url, first }) {
         })).join("")}
       </div>
 
-      <div class="kv__nav">
-        <button class="kv__arrow" type="button" data-kv-prev aria-label="前のビジュアル">←</button>
-        <ol class="kv__dots">
-          ${slides.map((s, i) => `<li><button type="button" data-kv-go="${i}"
-            aria-label="${i + 1}枚目を見る"${i === 0 ? ' aria-current="true"' : ""}></button></li>`).join("")}
-        </ol>
-        <button class="kv__arrow" type="button" data-kv-next aria-label="次のビジュアル">→</button>
-        <p class="kv__count num"><span data-kv-current>1</span> / ${slides.length}</p>
-      </div>
+      <button class="kv__arrow kv__arrow--prev" type="button" data-kv-prev aria-label="前のビジュアル">
+        <span aria-hidden="true"></span>
+      </button>
+      <button class="kv__arrow kv__arrow--next" type="button" data-kv-next aria-label="次のビジュアル">
+        <span aria-hidden="true"></span>
+      </button>
+
+      <ol class="kv__dots">
+        ${slides.map((s, i) => `<li><button type="button" data-kv-go="${i}"
+          aria-label="${i + 1}枚目を見る"${i === 0 ? ' aria-current="true"' : ""}></button></li>`).join("")}
+      </ol>
     </div>
   </section>`;
 }
@@ -2865,7 +2950,7 @@ function homeSlotHTML(slot, opts = {}) {
   if (slot.layout === "cta") {
     return `
   <section class="hs hs--cta"${s} aria-label="${alt(slot)}">
-    ${typeBlock(slot, { note: false })}
+    ${typeBlock(slot)}
     ${slot.media ? `<div class="hs__cta-media">${media(slot.media, url, "hs__img")}</div>` : ""}
   </section>`;
   }
@@ -2899,14 +2984,17 @@ const homeSlotsHTML = (slots, opts = {}) =>
     if (p.slice(0, 5) === "data:" || p.slice(0, 5) === "blob:" || /^https?:/.test(p) || p.charAt(0) === "#") return p;
     var map = window.PINK_ASSETS;
     if (map && map[p]) return map[p];
+    // 1ファイル版はページをハッシュで切り替える。
+    // ここを通さないと、公開先（/pink-index/ など）で404になる。
+    if (window.PINK_SINGLE && p.charAt(0) === "/") return "#" + p;
     var base = window.PINK_BASE || "/";
     return base + p.replace(/^\//, "");
   }
 
   window.PINK = {
-    catalog: { SCHEMA_VERSION, renderProfile, layerDefinitions, equipSlots, categories, items, baseLayers, compatibilityRules, girls, collections, artworks, updates, homeSlots, homeSections, flavorOf, thumbOf, itemById, itemsByCategory, collectionBySlug, publicItems, archiveCounts },
+    catalog: { SCHEMA_VERSION, renderProfile, layerDefinitions, equipSlots, categories, items, baseLayers, compatibilityRules, girls, collections, artworks, updates, homeSlots, flavorOf, thumbOf, itemById, itemsByCategory, collectionBySlug, publicItems, archiveCounts },
     core: { REQUIRED_SLOTS, configure, catalog, getItem, categoryOf, emptyState, resolveLayers, findConflict, select, deselect, clearAll, toggleLock, ensureRequired, encodeState, decodeState, lookFromDefault },
-    store: { load, reload, exportData, importData, save, resetAll, customCategories, customItems, customArtworks, removedIds, mergedCategories, mergedEquipSlots, mergedItems, mergedArtworks, visibleItems, visibleArtworks, isCustom, isRemoved, apply, addCategory, deleteCategory, addItem, addArtwork, updateItem, clearItemOverride, hasOverride, homeSlotsAll, visibleHomeSlots, updateHomeSlot, addHomeSlot, deleteHomeSlot, moveHomeSlot, resetHome, homeSectionsAll, updateHomeSections, mediaLibrary, addHomeSlide, updateHomeSlide, deleteHomeSlide, moveHomeSlide, textsAll, updateText, resetText, resetTexts, deleteItem, deleteArtwork, stats },
+    store: { load, reload, exportData, importData, save, resetAll, customCategories, customItems, customArtworks, removedIds, mergedCategories, mergedEquipSlots, mergedItems, mergedArtworks, visibleItems, visibleArtworks, isCustom, isRemoved, apply, addCategory, deleteCategory, categoryUsage, normalizeVis, visLabel, archiveItems, archiveArtworks, dressupItems, addItem, addArtwork, updateItem, clearItemOverride, hasOverride, homeSlotsAll, visibleHomeSlots, updateHomeSlot, addHomeSlot, deleteHomeSlot, moveHomeSlot, resetHome, mediaLibrary, addHomeSlide, updateHomeSlide, deleteHomeSlide, moveHomeSlide, brandLogo, setBrandLogo, textsAll, updateText, resetText, resetTexts, deleteItem, deleteArtwork, stats },
     home: { slideHTML, homeSlotHTML, homeSlotsHTML },
     url: url,
   };
@@ -3125,7 +3213,19 @@ if (counters.length && window.IntersectionObserver && !matchMedia("(prefers-redu
     marked.scrollIntoView({ block: "center", behavior: "smooth" });
   };
 
+  /** 最下部のロゴを、登録された画像へ差し替える */
+  const applyLogo = () => {
+    const img = document.getElementById("brand-logo-img");
+    const type = document.getElementById("brand-logo-type");
+    if (!img || !type) return;
+    const src = store.brandLogo();
+    img.hidden = !src;
+    type.hidden = Boolean(src);
+    if (src) img.src = src;
+  };
+
   apply();
+  applyLogo();
   window.PINK_TEXTS = { apply, collect, mark, keyOf };
 
   // 管理画面（親の窓）とのやり取り
@@ -3137,6 +3237,7 @@ if (counters.length && window.IntersectionObserver && !matchMedia("(prefers-redu
     } else if (msg.pinkTexts === "refresh") {
       store.reload();          // 管理画面が保存した内容を読み直す
       apply();
+      applyLogo();
       e.source.postMessage({ pinkTexts: "list", route: route(), rows: collect() }, "*");
     } else if (msg.pinkTexts === "mark") {
       mark(msg.key);
@@ -3315,22 +3416,18 @@ if (loader) {
          </section>`;
   }
 
-  /* --- 下部の区画（もくじ・点数）の表示切替 ---------------- */
-  const sections = store.homeSectionsAll();
-  const box = (id) => document.getElementById(id);
-  if (box("home-index")) box("home-index").hidden = sections.index === false;
-  if (box("home-archive")) box("home-archive").hidden = sections.archive === false;
-
   /* --- キービジュアルの切り替え --------------------------- */
   const kv = root.querySelector("[data-kv]");
   if (!kv) return;
   const track = kv.querySelector(".kv__track");
   const slides = [...track.querySelectorAll(".kv__slide")];
   const dots = [...kv.querySelectorAll("[data-kv-go]")];
-  const current = kv.querySelector("[data-kv-current]");
   const prev = kv.querySelector("[data-kv-prev]");
   const next = kv.querySelector("[data-kv-next]");
-  if (slides.length < 2) { kv.querySelector(".kv__nav")?.remove(); return; }
+  if (slides.length < 2) {
+    kv.querySelectorAll(".kv__arrow, .kv__dots").forEach((n) => n.remove());
+    return;
+  }
 
   let index = 0;
   let painted = -1;
@@ -3340,7 +3437,6 @@ if (loader) {
   const paint = () => {
     painted = index;
     dots.forEach((d, n) => d.setAttribute("aria-current", String(n === index)));
-    if (current) current.textContent = String(index + 1);
     prev.disabled = index === 0;
     next.disabled = index === slides.length - 1;
     // 見えていないスライドは読み上げ・タブ移動の対象から外す
@@ -3435,6 +3531,27 @@ if (loader) {
     requestAnimationFrame(() => { sync(); ticking = false; });
   }, { passive: true });
   addEventListener("resize", sync, { passive: true });
+
+  /* --- 自動送り（既定は止まっている） ----------------------
+     管理画面で ON にしたときだけ動く。動きを減らす設定の人、
+     操作している人、別のタブを見ている人の前では止める。
+     ------------------------------------------------------- */
+  const every = Number(kv.dataset.autoplay) || 0;
+  if (every && !calm.matches) {
+    let timer = null;
+    const stop = () => { clearInterval(timer); timer = null; };
+    const start = () => {
+      if (timer || document.hidden) return;
+      timer = setInterval(() => goTo(index + 1 >= slides.length ? 0 : index + 1), every * 1000);
+    };
+    kv.addEventListener("pointerenter", stop);
+    kv.addEventListener("pointerleave", start);
+    kv.addEventListener("focusin", stop);
+    kv.addEventListener("focusout", start);
+    document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+    start();
+  }
+
   paint();
 })();
 
@@ -3506,7 +3623,8 @@ if (loader) {
 
   function buildCatalogViews() {
     categories = store.mergedCategories();
-    items = store.visibleItems().filter((i) => (i.status ?? "PUBLISHED") === "PUBLISHED");
+    // 着せ替えで使えるのは、DRESS-UP を選んで登録したものだけ
+    items = store.dressupItems();
 
     catTabs.innerHTML =
       `<button class="cat-tab" role="tab" aria-selected="true" data-cat="all"><span class="icon" aria-hidden="true">◆</span>すべて</button>` +
@@ -3524,12 +3642,7 @@ if (loader) {
           ${list.map(partButton).join("")}
         </div>
       </section>`;
-    }).join("") + (items.length ? "" : `
-      <div class="empty">
-        <p class="empty__title">着せ替えできる素材がまだありません</p>
-        <p class="empty__body">管理画面から素体と衣装を登録すると並びます。</p>
-        <p style="margin-top:var(--s-5)"><a class="btn btn--primary" href="${url("/studio/new/")}">絵を登録する</a></p>
-      </div>`) + `<p class="empty" id="parts-empty" hidden>
+    }).join("") + (items.length ? "" : `<p class="coming">COMING SOON</p>`) + `<p class="empty" id="parts-empty" hidden>
         <span class="empty__title">条件に合う素材がありません</span>
         <span class="empty__body">条件を1つ外してみてください。</span>
       </p>`;
@@ -3876,7 +3989,9 @@ if (loader) {
     if (grid.id === "closet-grid") {
       const removed = new Set(store.removedIds().items);
       for (const i of store.customItems()) {
-        if (removed.has(i.id) || i.cat === "background" || i.cat === "face") continue;
+        // 図鑑に出すと決めたものだけ並べる（PRIVATE は出さない）
+        if (removed.has(i.id) || !i.vis?.archive) continue;
+        if (i.cat === "background" || i.cat === "face") continue;
         grid.insertAdjacentHTML("beforeend", `
           <div data-card data-id="${esc(i.id)}" data-cat="${esc(i.cat)}" data-color="${esc((i.colors ?? []).join(" "))}"
                data-season="${esc(i.season)}" data-series="${esc(i.series)}" data-name="${esc(i.name)}"
@@ -3895,7 +4010,7 @@ if (loader) {
     if (grid.id === "gallery-grid") {
       const removed = new Set(store.removedIds().artworks);
       for (const a of store.customArtworks()) {
-        if (removed.has(a.id)) continue;
+        if (removed.has(a.id) || !a.vis?.archive) continue;
         grid.insertAdjacentHTML("beforeend", `
           <article class="card" data-card data-id="${esc(a.id)}" data-series="${esc(a.series)}"
                    data-name="${esc(a.name)}" data-tags="${esc((a.tags ?? []).join(" "))}"
@@ -4166,13 +4281,74 @@ if (loader) {
     el("e-date").value = new Date().toISOString().slice(0, 10);
 
     const kind = el("kind");
-    kind.addEventListener("change", () => {
+    const visArchive = el("e-vis-archive"), visDressup = el("e-vis-dressup");
+
+    /** いま何として登録されるかを、押す前に1行で見せる */
+    const summarize = () => {
       const isArt = kind.value === "artwork";
-      el("cat-field").hidden = isArt;
-      el("register-note").textContent = isArt
-        ? "登録した作品は GALLERY に出ます。保存先はこの端末のブラウザです。"
-        : "登録した素材はすぐ DRESS UP と CLOSET に出ます。保存先はこの端末のブラウザです。";
+      visDressup.closest(".check").hidden = isArt;   // 作品は着せ替えに使わない
+      const where = [];
+      if (visArchive.checked) where.push(isArt ? "GALLERY" : "CLOSET");
+      if (!isArt && visDressup.checked) where.push("DRESS UP");
+      el("register-summary").textContent = where.length ? `${where.join(" / ")} に出して登録` : "PRIVATE で登録";
+    };
+    kind.addEventListener("change", () => { el("cat-field").hidden = kind.value === "artwork"; summarize(); });
+    visArchive.addEventListener("change", summarize);
+    visDressup.addEventListener("change", summarize);
+    summarize();
+
+    /* --- タグと色（候補から選ぶ・新しく足す） ----------------
+       スペース区切りの入力をやめ、押して外せるチップにする。
+       -------------------------------------------------------- */
+    const chips = { tags: [], colors: [] };
+
+    const suggestions = (kindKey) => {
+      const all = store.mergedItems().flatMap((i) => (kindKey === "tags" ? i.tags : i.colors) ?? []);
+      return [...new Set(all)].sort();
+    };
+
+    const drawChips = () => {
+      for (const key of ["tags", "colors"]) {
+        const box = el(`${key}-input`);
+        if (!box) continue;
+        box.querySelector(".chips-input__list").innerHTML = chips[key].map((t) => `
+          <button class="chip-token" type="button" data-drop-chip="${esc(key)}" data-value="${esc(t)}">
+            ${esc(t)}<span aria-hidden="true">×</span>
+            <span class="visually-hidden">を外す</span>
+          </button>`).join("");
+        const list = box.querySelector("datalist");
+        if (list) list.innerHTML = suggestions(key).filter((t) => !chips[key].includes(t))
+          .map((t) => `<option value="${esc(t)}">`).join("");
+      }
+    };
+
+    const addChip = (key, value) => {
+      const v = String(value ?? "").trim();
+      if (!v || chips[key].includes(v)) return;
+      chips[key].push(v);
+      drawChips();
+    };
+
+    for (const [key, id] of [["tags", "e-tags"], ["colors", "e-colors"]]) {
+      const input = el(id);
+      if (!input) continue;
+      input.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== "," && e.key !== " ") return;
+        e.preventDefault();
+        addChip(key, input.value);
+        input.value = "";
+      });
+      input.addEventListener("change", () => { addChip(key, input.value); input.value = ""; });
+      input.addEventListener("blur", () => { addChip(key, input.value); input.value = ""; });
+    }
+    el("entry-form").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-drop-chip]");
+      if (!btn) return;
+      const key = btn.dataset.dropChip;
+      chips[key] = chips[key].filter((t) => t !== btn.dataset.value);
+      drawChips();
     });
+    drawChips();
 
     /* --- 画像の取り込み --- */
     const dz = el("dropzone");
@@ -4180,7 +4356,9 @@ if (loader) {
     let picked = null;
 
     const inspect = (rows) => {
-      el("inspect").innerHTML = rows.map(([ok, label, state]) =>
+      const box = el("inspect");
+      box.hidden = !rows.length;
+      box.innerHTML = rows.map(([ok, label, state]) =>
         `<li data-ok="${ok}"><span class="mark">●</span><span>${esc(label)}</span><span class="state">${esc(state)}</span></li>`).join("");
     };
 
@@ -4207,14 +4385,12 @@ if (loader) {
         ["true", "形式", picked.kind],
         ["true", "キャンバス", picked.w ? `${picked.w} × ${picked.h} → 720 × 1080 に配置` : "720 × 1080（そのまま）"],
         [sizeKb > 900 ? "false" : "true", "データの大きさ", `${sizeKb} KB${sizeKb > 900 ? "（大きすぎます。縮小してください）" : ""}`],
-        ["pending", "重なりの確認", "右のプレビューで確認"],
       ]);
       const cat = store.mergedCategories().find((c) => c.key === catSelect.value);
       previewPiece = { media: picked.media, layer: cat?.layer ?? layerForCat(catSelect.value) };
       showPreview = true;
       drawPreview();
       if (!el("e-name").value) el("e-name").value = file.name.replace(/\.[^.]+$/, "");
-      markStep(2);
     }
 
     /** 720×1080 のキャンバスへ、縦横比を保って収める */
@@ -4261,45 +4437,39 @@ if (loader) {
       drawPreview();
     });
 
-    const markStep = (n) => {
-      document.querySelectorAll(".wizard__step").forEach((s, i) => {
-        s.dataset.state = i < n ? "done" : i === n ? "current" : "todo";
-      });
-    };
-    el("entry-form").addEventListener("input", () => {
-      el("autosave").textContent = "下書き ・ 入力中";
-      markStep(3);
-    });
+    el("entry-form").addEventListener("input", () => { el("autosave").textContent = "入力中"; });
 
     el("btn-clear-form").addEventListener("click", () => {
       el("entry-form").reset();
       picked = null; previewPiece = null;
-      inspect([["pending", "画像を選ぶと検査します", "—"]]);
+      inspect([]);
+      chips.colors = []; chips.tags = []; drawChips();
       drawPreview();
-      markStep(0);
+      summarize();
     });
 
     el("btn-register").addEventListener("click", () => {
       if (!picked) { toast("先に画像を選んでください"); return; }
+      const isArt = kind.value === "artwork";
       const name = el("e-name").value.trim();
       const common = {
         name, media: picked.media, memo: el("e-memo").value,
         series: el("e-series").value, createdOn: el("e-date").value,
-        tags: el("e-tags").value.split(/\s+/).filter(Boolean),
+        tags: [...chips.tags],
+        vis: { archive: visArchive.checked, dressup: !isArt && visDressup.checked },
         // フレーバーテキストは公開される作品の文章。管理用のメモとは別に持つ
         flavor: {
           public: el("e-flavor-public").checked,
           ja: { short: el("e-flavor-short").value.trim(), body: el("e-flavor-body").value.trim() },
         },
       };
-      const result = kind.value === "artwork"
+      const result = isArt
         ? store.addArtwork(common)
-        : store.addItem({ ...common, cat: catSelect.value, colors: el("e-colors").value.split(/\s+/).filter(Boolean) });
+        : store.addItem({ ...common, cat: catSelect.value, colors: [...chips.colors] });
 
       if (result.ok) {
         toast(result.persisted ? `「${name}」を登録しました` : `登録しました（${result.reason}）`);
         el("btn-clear-form").click();
-        markStep(5);
       } else {
         toast(result.reason ?? "登録できませんでした");
       }
@@ -4334,8 +4504,7 @@ if (loader) {
         return `<li data-id="${esc(i.id)}">
           <img src="${esc(thumbFor(i))}" alt="" width="34" height="34" style="object-fit:contain">
           <span><strong>${esc(i.name)}</strong> <span class="order num">${esc(i.no)}</span>
-            ${i.custom ? '<span class="tag-chip">自作</span>' : ""}
-            ${store.hasOverride(i.id) ? '<span class="tag-chip">編集済み</span>' : ""}<br>
+            <span class="vis-pill" data-vis="${esc(store.visLabel(i))}">${esc(store.visLabel(i))}</span><br>
             <span style="color:var(--c-ink-muted)">${esc(catName(i.cat))} ・ ${esc(String(i.createdOn))}</span></span>
           <span class="order">${esc(i.pieces.map((p) => p.layer).join(" / "))}</span>
           <span class="home-slot__actions">
@@ -4354,13 +4523,18 @@ if (loader) {
       return `
         <div class="form-row">
           <div class="field"><label>名前</label><input class="input" data-f="name" value="${esc(item.name)}"></div>
-          <div class="field"><label>短いコピー（一覧に出ます）</label>
+          <div class="field"><label>短いコピー</label>
             <input class="input" data-f="short" maxlength="40" value="${esc(f.short ?? "")}"></div>
         </div>
-        <div class="field"><label>フレーバーテキスト（詳細ページに出ます）</label>
+        <fieldset class="vis-fields">
+          <legend class="index-label">公開状態</legend>
+          <label class="check"><input type="checkbox" data-f="vis-archive"${item.vis?.archive ? " checked" : ""}> PUBLIC ・ 図鑑とギャラリー</label>
+          <label class="check"><input type="checkbox" data-f="vis-dressup"${item.vis?.dressup ? " checked" : ""}> DRESS-UP ・ 着せ替え</label>
+        </fieldset>
+        <div class="field"><label>フレーバーテキスト</label>
           <textarea class="textarea" data-f="body">${esc(f.body ?? "")}</textarea></div>
         <label class="check"><input type="checkbox" data-f="public"${pub ? " checked" : ""}> フレーバーテキストを公開する</label>
-        <div class="field"><label>メモ（作者だけが見る管理用。公開されません）</label>
+        <div class="field"><label>管理メモ</label>
           <textarea class="textarea" data-f="memo">${esc(item.memo ?? "")}</textarea></div>
         <div class="publish-bar">
           ${store.hasOverride(item.id) ? `<button class="btn btn--sm" data-revert="${esc(item.id)}">組み込みの内容に戻す</button>` : ""}
@@ -4395,6 +4569,7 @@ if (loader) {
         const r = store.updateItem(save.dataset.save, {
           name: v("name").value.trim(),
           memo: v("memo").value,
+          vis: { archive: v("vis-archive").checked, dressup: v("vis-dressup").checked },
           flavor: { public: v("public").checked, ja: { short: v("short").value.trim(), body: v("body").value.trim() } },
         });
         toast(r.ok ? (r.persisted ? "保存しました" : `保存しました（${r.reason}）`) : r.reason);
@@ -4429,7 +4604,7 @@ if (loader) {
             ${c.custom ? '<span class="tag-chip">自作</span>' : '<span class="tag-chip">組み込み</span>'}<br>
             <span style="color:var(--c-ink-muted)">${esc(layer ? `${layer.name}（${layer.key}）` : "既定のレイヤー")} ・ 素材 ${count} 点</span></span>
           <span class="order num">${count}</span>
-          <span>${c.custom ? `<button class="btn btn--sm" data-del-cat="${esc(c.key)}">削除</button>` : ""}</span>
+          <span><button class="btn btn--sm" data-del-cat="${esc(c.key)}">削除</button></span>
         </li>`;
       }).join("");
     };
@@ -4445,11 +4620,25 @@ if (loader) {
       render();
     });
 
+    /**
+     * 削除は組み込みでも消せる。使っている素材があるときは件数を見せ、
+     * 「素材ごと消す」を選んだときだけ実行する。
+     */
     el("cat-list").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-del-cat]");
       if (!btn) return;
-      const r = store.deleteCategory(btn.dataset.delCat);
-      toast(r.ok ? "カテゴリを削除しました" : r.reason);
+      const key = btn.dataset.delCat;
+      const used = store.categoryUsage(key);
+      if (used && btn.dataset.force !== "yes") {
+        btn.dataset.force = "yes";
+        btn.textContent = `素材${used}点ごと削除`;
+        setTimeout(() => { btn.dataset.force = ""; btn.textContent = "削除"; }, 4000);
+        toast(`このカテゴリは素材 ${used} 点で使われています`);
+        return;
+      }
+      if (!used && !confirmTwice(btn, "削除（もう一度押す）")) return;
+      const r = store.deleteCategory(key, { force: true });
+      toast(r.ok ? `削除しました${r.deletedItems ? `（素材 ${r.deletedItems} 点も削除）` : ""}` : r.reason);
       render();
     });
     render();
@@ -4499,7 +4688,7 @@ if (loader) {
     const LINKS = [
       ["/dressup/", "DRESS UP（着せ替え）"], ["/closet/", "CLOSET（衣装図鑑）"],
       ["/girls/", "GIRLS（女の子）"], ["/collections/", "COLLECTIONS（シリーズ）"],
-      ["/gallery/", "GALLERY（作品）"], ["/updates/", "更新履歴"],
+      ["/gallery/", "GALLERY（作品）"],
       ...catalog.collections.map((c) => [`/collections/${c.slug}/`, `シリーズ｜${c.name}`]),
     ];
     const open = new Set();
@@ -4652,6 +4841,10 @@ if (loader) {
         <div class="publish-bar">
           <button class="btn btn--sm" type="button" data-slide-add>＋ 1枚ふやす</button>
           <span class="spacer"></span>
+          <label class="check"><input type="checkbox" data-h="autoplay"${slot.autoplay ? " checked" : ""}> 自動送り</label>
+          <label class="check">間隔
+            <input class="input" type="number" min="2" max="30" step="1" style="width:5rem"
+                   data-h="interval" value="${Number(slot.interval) || 6}"> 秒</label>
           <label class="check"><input type="checkbox" data-h="published"${slot.published !== false ? " checked" : ""}> HOMEに表示する</label>
         </div>`;
       }
@@ -4913,7 +5106,7 @@ if (loader) {
     });
 
     // 入力はその場で保存する（下書きを持たない）
-    const NUMERIC = new Set(["tx", "ty", "tw"]);
+    const NUMERIC = new Set(["tx", "ty", "tw", "interval"]);
     el("home-editor").addEventListener("input", (e) => {
       const card = e.target.closest(".home-slot");
       if (!card) return;
@@ -5135,24 +5328,38 @@ if (loader) {
     });
 
     // HOMEの下に置く区画（もくじ・点数）
-    const secBox = el("home-sections");
-    if (secBox) {
-      const paintSections = () => {
-        const now = store.homeSectionsAll();
-        for (const input of secBox.querySelectorAll("[data-sec]")) {
-          input.checked = now[input.dataset.sec] !== false;
-        }
-      };
-      secBox.addEventListener("change", (e) => {
-        const key = e.target.dataset.sec;
-        if (!key) return;
-        const r = store.updateHomeSections({ [key]: e.target.checked });
-        toast(r.persisted ? "HOMEに反映しました" : `変えました（${r.reason}）`);
-      });
-      paintSections();
-    }
-
     render();
+  }
+
+  /* --- 最下部のロゴ（画像に差し替えられる） ----------------- */
+  if (el("brand-logo-field")) {
+    const preview = el("brand-logo-preview");
+    const paint = () => {
+      const src = store.brandLogo();
+      preview.innerHTML = src
+        ? `<img src="${esc(src)}" alt="いま使っているロゴ">`
+        : `<span class="hint">いまは文字で組んでいます</span>`;
+    };
+    el("brand-logo-file").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const data = await new Promise((res) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = () => res(null);
+        r.readAsDataURL(file);
+      });
+      if (!data) { toast("この画像は取り込めませんでした"); return; }
+      const r = store.setBrandLogo(data);
+      toast(r.persisted ? "ロゴを差し替えました" : `差し替えました（${r.reason}）`);
+      paint();
+    });
+    el("brand-logo-clear").addEventListener("click", () => {
+      store.setBrandLogo("");
+      toast("文字のロゴに戻しました");
+      paint();
+    });
+    paint();
   }
 
   /* ======================= サイトの文字 =======================
