@@ -1,4 +1,5 @@
 <title>STUDIO — PINK INDEX</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%20%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23FFF9FC%22%2F%3E%20%3Cpath%20d%3D%22M9%208h11l4%205-4%205H9z%22%20fill%3D%22none%22%20stroke%3D%22%23171417%22%20stroke-width%3D%222%22%2F%3E%20%3Ccircle%20cx%3D%2212.5%22%20cy%3D%2213%22%20r%3D%221.6%22%20fill%3D%22%23171417%22%2F%3E%20%3Ccircle%20cx%3D%2216%22%20cy%3D%2224%22%20r%3D%222.5%22%20fill%3D%22%23FF4FA3%22%2F%3E%20%3C%2Fsvg%3E">
 <style>
 /* ============================================================
    PINK INDEX — Design Tokens
@@ -823,71 +824,122 @@ body[data-loading="true"] { overflow: hidden; }
 .sec a { color: inherit; }
 .sec a:hover { text-decoration: none; opacity: 0.82; }
 
-/* --- 02 FEATURE：大判1点＋小判2点 --------------------------- */
-.feature { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(1rem, 3vw, 3rem); align-items: start; }
-.feature__lead { display: block; }
-.feature__lead .feature__img { aspect-ratio: 4 / 5; }
-.feature__side { display: grid; gap: clamp(1rem, 3vw, 2.5rem); padding-top: clamp(2rem, 8vw, 6rem); }
-.feature__item .feature__img { aspect-ratio: 1 / 1; }
-.feature__img { width: 100%; height: auto; object-fit: cover; display: block; }
+/* --- 画像の枡（共通） --------------------------------------
+   比率と切り取る位置はHTML側の style で1枡ずつ指定する。
+   ここでは入れ物と、寄せたときの動きだけを決める。
+   ---------------------------------------------------------- */
+.sec figure, .sec .ph { margin: 0; }
+/* 高さは比率（HTML側の aspect-ratio）から決める。
+   height:100% にすると、行の高さと画像の高さが互いを参照して枡が行からはみ出す。 */
+.sec img { display: block; width: 100%; height: auto; object-fit: cover; background: var(--c-pink-mist); }
 
-/* --- 03 DETAILS：横長のストリップ --------------------------- */
-.sec--details { padding-inline: 0; }
-.sec--details .sec__head, .sec--details .sec__more { padding-inline: var(--page-x); }
+/* 画像がまだ1枚も無いときの色面。作品の代わりではなく、区画の骨格を示すだけ */
+.ph {
+  display: block; width: 100%;
+  background:
+    repeating-linear-gradient(135deg, var(--c-pale-pink) 0 14px, var(--c-pink-mist) 14px 28px);
+}
+.sec--spotlight .ph {
+  background: repeating-linear-gradient(135deg, #2a2229 0 14px, #201a1f 14px 28px);
+}
+
+/* 寄せたときの軽い拡大。動きを止める設定なら効かせない */
+.feature__lead, .strip__shot, .picks__shot, .spotlight__cover { display: block; overflow: clip; }
+.feature__lead img, .strip__shot img, .picks__shot img, .spotlight__cover img {
+  transition: transform var(--m-reveal) var(--ease-out);
+}
+.feature__lead:hover img, .strip__shot:hover img,
+.picks__shot:hover img, .spotlight__cover:hover img { transform: scale(1.03); }
+.sec a:hover { opacity: 1; }
+.sec a:hover .cap__title { text-decoration: underline; text-underline-offset: 0.28em; }
+
+/* スクロールで現れるときの短いフェード */
+[data-reveal] { opacity: 1; }
+body[data-reveal-ready] [data-reveal] {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity var(--m-reveal) var(--ease-out), transform var(--m-reveal) var(--ease-out);
+}
+body[data-reveal-ready] [data-reveal][data-shown] { opacity: 1; transform: none; }
+
+/* --- 02 FEATURE：1点を大きく、文字は絵の外へ ---------------- */
+.sec--feature { padding-inline: 0; }
+.feature {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  align-items: end;
+  gap: clamp(1.25rem, 3vw, 3.5rem);
+}
+/* 左端まで絵を伸ばし、右に余白を残す非対称 */
+.feature__stage { grid-column: 1; }
+.feature__lead img { max-height: 86svh; }
+.feature__aside { grid-column: 2; padding: 0 var(--page-x) clamp(0.5rem, 3vw, 2.5rem) 0; }
+.sec--feature .sec__head { padding-inline: var(--page-x); }
+.feature__name {
+  font-family: var(--font-en); font-weight: var(--w-bold);
+  font-size: clamp(1.5rem, 3vw, 2.75rem); line-height: 1.05;
+  letter-spacing: -0.01em; margin: 0; max-width: none;
+}
+.feature__year { font-size: var(--t-sm); color: var(--c-ink-muted); margin: var(--s-3) 0 0; }
+.feature__note { font-size: var(--t-sm); margin: var(--s-4) 0 0; max-width: 26em; }
+.feature__aside .sec__more { margin-top: var(--s-5); }
+
+/* --- 03 DETAILS：比率のちがう切り取りを横へ ----------------- */
+.sec--details { padding-inline: 0; background: var(--c-pink-mist); }
+.sec--details .sec__head { padding-inline: var(--page-x); }
 .strip {
-  display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
-  scroll-snap-type: x proximity;
+  display: flex; gap: clamp(0.5rem, 1.6vw, 1.25rem);
+  overflow-x: auto; scroll-snap-type: x proximity;
+  padding-inline: var(--page-x); scrollbar-width: none;
+  overscroll-behavior-x: contain;
 }
 .strip::-webkit-scrollbar { display: none; }
-.strip__cell { flex: 0 0 min(42vw, 420px); scroll-snap-align: start; display: block; }
-.strip__img {
-  width: 100%; height: clamp(180px, 34svh, 380px);
-  object-fit: cover; object-position: 50% var(--crop, 40%); display: block;
-}
+.strip__cell { flex: 0 0 auto; scroll-snap-align: center; }
+/* 枡ごとに幅を変えて、同じ形の繰り返しに見せない */
+.strip__cell--narrow { width: min(46vw, 300px); }
+.strip__cell--square { width: min(52vw, 360px); }
+.strip__cell--wide { width: min(78vw, 560px); }
+/* 上下に段差をつけ、帯が一直線に見えないようにする */
+.strip__cell:nth-child(even) { margin-top: clamp(1rem, 4vw, 3.5rem); }
 
-/* --- 04 COLOR STORY：段差をつけて並べる --------------------- */
+/* --- 04 SELECTED：大きさの違う4枡の非対称グリッド ------------ */
+.picks {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 2.5rem) clamp(1rem, 3vw, 3rem);
+  align-items: start;
+}
+/* 縦長1点の横に、横長2点を積む。最後の1点だけ列をずらして息をつく */
+.picks__item--tall { grid-column: 1 / span 5; grid-row: 1 / span 2; }
+.picks__item--wide { grid-column: 7 / span 6; grid-row: 1; align-self: start; }
+.picks__item--wide2 { grid-column: 7 / span 5; grid-row: 2; align-self: start; }
+.picks__item--square { grid-column: 3 / span 4; grid-row: 3; }
+
+/* --- 05 SPOTLIGHT：終盤の色の切り替え ---------------------- */
+.sec--spotlight { padding-inline: 0; }
+.spotlight {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center; gap: clamp(1.5rem, 4vw, 4rem);
+}
+.spotlight__cover img { max-height: 82svh; }
+.spotlight__body { padding: clamp(1rem, 4vw, 3rem) var(--page-x) clamp(1rem, 4vw, 3rem) 0; }
+.spotlight__title {
+  font-family: var(--font-en); font-size: var(--t-display); line-height: 0.95;
+  margin: var(--s-3) 0 0; max-width: none;
+}
+.spotlight__copy { font-size: var(--t-sm); margin: var(--s-4) 0 0; max-width: 30em; opacity: 0.82; }
+.sec--spotlight .link-arrow { color: inherit; }
+
+/* --- 以前の設定を残している人向け（COLOR STORY / ARCHIVE） -- */
 .color-row {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: clamp(1rem, 3vw, 2.5rem); align-items: start;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: clamp(0.75rem, 2vw, 2rem); align-items: start;
 }
 .color-row__item { display: block; margin-top: calc(var(--n, 0) * clamp(0.5rem, 2vw, 2rem)); }
 .color-row__img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; }
-
-/* --- 05 NEW：大小の混ざったグリッド ------------------------- */
-.mixed {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: clamp(0.75rem, 2vw, 2rem); grid-auto-flow: dense;
-}
-.mixed__item { display: block; }
-.mixed__img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; display: block; }
-.mixed__item--tall { grid-row: span 2; }
-.mixed__item--tall .mixed__img { aspect-ratio: 1 / 2; }
-.mixed__item--wide { grid-column: span 2; }
-.mixed__item--wide .mixed__img { aspect-ratio: 2 / 1; }
-
-/* --- 06 SPOTLIGHT：横幅いっぱいの特集 ----------------------- */
-.sec--spotlight { padding-inline: 0; }
-.spotlight { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); align-items: center; }
-.spotlight__cover { display: block; }
-.spotlight__img { width: 100%; height: 100%; max-height: 78svh; object-fit: cover; display: block; }
-.spotlight__body { padding: clamp(2rem, 6vw, 5rem) var(--page-x); }
-.spotlight__title { font-family: var(--font-en); font-size: var(--t-display); line-height: 0.95; margin: var(--s-3) 0 0; }
-.spotlight__copy { font-size: var(--t-sm); color: var(--c-ink-muted); margin: var(--s-4) 0 0; max-width: 32em; }
-.spotlight__thumbs { display: flex; gap: var(--s-3); margin-top: var(--s-5); }
-.spotlight__thumbs img { width: clamp(64px, 9vw, 110px); aspect-ratio: 1; object-fit: cover; display: block; }
-
-/* --- 07 ARCHIVE：小さなモザイク ----------------------------- */
 .mosaic { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 2px; }
 .mosaic__cell { display: block; }
 .mosaic__img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; filter: saturate(0.92); }
 .mosaic__cell:hover .mosaic__img { filter: none; }
-
-/* --- 08 ABOUT の帯 ------------------------------------------ */
-.about-strip { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 7fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: center; }
-/* 写真が無いときは1列にする（空の列に文字が押し込まれないように） */
-.about-strip:not(:has(.about-strip__media)) { grid-template-columns: 1fr; }
-.about-strip__media img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; border-radius: 50%; }
-.about-strip__lead { font-size: var(--t-lead); margin: var(--s-3) 0 0; max-width: 34em; }
 
 /* --- 縦画面・スマートフォン --------------------------------- */
 @media (orientation: portrait) {
@@ -898,11 +950,36 @@ body[data-loading="true"] { overflow: hidden; }
 @media (max-width: 900px) {
   .kv__arrow { width: 44px; height: 56px; }
   .kv__free { inset: calc(var(--header-h) + 0.5rem) var(--page-x) clamp(4rem, 12vw, 5rem); }
-  .feature, .spotlight, .about-strip { grid-template-columns: 1fr; }
-  .feature__side { padding-top: 0; grid-template-columns: 1fr 1fr; }
-  .about-strip__media img { max-width: 180px; }
-  .mixed__item--wide { grid-column: span 1; }
-  .mixed__item--wide .mixed__img { aspect-ratio: 1 / 1; }
+
+  /* FEATURE：絵を上、文字を下の縦並びに */
+  .feature { grid-template-columns: 1fr; align-items: start; }
+  .feature__stage, .feature__aside { grid-column: 1; }
+  .feature__aside { padding: 0 var(--page-x); }
+  .feature__lead img { max-height: none; }
+
+  /* SELECTED：縦に積むが、幅と比率は変えたままにする */
+  .picks { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .picks__item--tall { grid-column: 1 / span 6; grid-row: auto; }
+  .picks__item--wide { grid-column: 1 / span 5; grid-row: auto; }
+  .picks__item--wide2 { grid-column: 2 / span 5; grid-row: auto; }
+  .picks__item--square { grid-column: 1 / span 4; grid-row: auto; }
+
+  /* SPOTLIGHT：絵を上、文字を下へ */
+  .spotlight { grid-template-columns: 1fr; gap: 0; }
+  .spotlight__body { padding: clamp(1.5rem, 6vw, 3rem) var(--page-x) clamp(2rem, 8vw, 4rem); }
+  .spotlight__cover img { max-height: 62svh; }
+
+  .strip__cell--narrow { width: min(62vw, 260px); }
+  .strip__cell--square { width: min(70vw, 300px); }
+  .strip__cell--wide { width: min(86vw, 420px); }
+}
+
+/* 動きを減らす設定のときは、フェードも拡大も止める */
+@media (prefers-reduced-motion: reduce) {
+  body[data-reveal-ready] [data-reveal] { opacity: 1; transform: none; transition: none; }
+  .feature__lead img, .strip__shot img, .picks__shot img, .spotlight__cover img { transition: none; }
+  .feature__lead:hover img, .strip__shot:hover img,
+  .picks__shot:hover img, .spotlight__cover:hover img { transform: none; }
 }
 
 /* ============================================================
@@ -1547,12 +1624,10 @@ const homeSlots = [
       },
     ],
   },
-  { id: "hs-feature", layout: "feature", order: 2, published: true, title: "FEATURE", href: "/works/", linkLabel: "VIEW MORE" },
+  { id: "hs-feature", layout: "feature", order: 2, published: true, title: "FEATURE", href: "/works/", linkLabel: "VIEW WORKS" },
   { id: "hs-details", layout: "details", order: 3, published: true, title: "DETAILS" },
-  { id: "hs-color", layout: "colorstory", order: 4, published: true, title: "COLOR STORY", tag: "" },
-  { id: "hs-new", layout: "new", order: 5, published: true, title: "NEW", href: "/works/", linkLabel: "VIEW MORE" },
-  { id: "hs-spotlight", layout: "spotlight", order: 6, published: true, title: "SPOTLIGHT", seriesSlug: "" },
-  { id: "hs-archive", layout: "archive", order: 7, published: true, title: "ARCHIVE", href: "/works/", linkLabel: "VIEW ALL" },
+  { id: "hs-new", layout: "new", order: 4, published: true, title: "SELECTED", href: "/works/", linkLabel: "VIEW ALL" },
+  { id: "hs-spotlight", layout: "spotlight", order: 5, published: true, title: "SPOTLIGHT", seriesSlug: "", href: "/works/", linkLabel: "VIEW MORE", bg: "#171417", fg: "#FFFFFF" },
 ];
 
 /* --- 導出ヘルパ -------------------------------------------
@@ -1992,9 +2067,9 @@ function stats() {
  * サーバー側の書き出しと、管理画面のプレビューで同じ関数を使う。
  * DOMには触れず、文字列だけを返す。
  *
- * 区画の中身は「登録した作品」から自動で拾う。作品が無い区画は何も返さない
- * （公開側に0件の枠を出さないため）。同じ組みを繰り返さず、区画ごとに
- * 画像の比率・余白・文字の位置を変える。
+ * キービジュアルの下は FEATURE / DETAILS / SELECTED / SPOTLIGHT の順で、
+ * 見せ方の違う区画が続く。中身は登録した作品と、キービジュアルに使った絵から
+ * 拾う。同じ組みを繰り返さず、区画ごとに画像の比率・切り取る場所・余白を変える。
  */
 
 const esc = (s) => String(s ?? "")
@@ -2096,59 +2171,133 @@ function heroHTML(slot, { url, first }) {
   </section>`;
 }
 
+/* --- 画像の在庫 ---------------------------------------------
+   キービジュアルの下の区画は、登録した作品と、キービジュアルに使った絵から
+   画像を集めて組む。外から持ってきた画像は一切足さない。
+   点数が少ないときは、同じ絵を「別の比率・別の切り取り位置」で見せる。
+   ---------------------------------------------------------- */
+
+/** 作品 → 作品の追加画像 → キービジュアル の順に集め、重複は落とす */
+function buildPool(works, slots, url) {
+  const out = [];
+  const seen = new Set();
+  const push = (src, alt, href, work) => {
+    if (!src || seen.has(src)) return;
+    seen.add(src);
+    out.push({ src, alt: alt ?? "", href, work });
+  };
+  for (const w of works) push(w.mainImage, w.altText ?? w.title, workHref(w, url), w);
+  for (const w of works) for (const extra of w.images ?? []) push(extra, w.altText ?? w.title, workHref(w, url), w);
+  for (const slot of slots ?? []) {
+    if (slot.layout !== "hero") continue;
+    for (const s of slot.slides ?? []) {
+      push(s.media, s.altText ?? s.title, s.href ? url(s.href) : url("/works/"), null);
+    }
+  }
+  return out;
+}
+
+/** 在庫から順に取り出す。足りなければ先頭へ戻る */
+const pick = (pool, i) => (pool.length ? pool[((i % pool.length) + pool.length) % pool.length] : null);
+
+/**
+ * 切り取りの型。比率と、絵のどこを見せるかの組。
+ * 1枚しか無い場合でも、ここが違えば毎回ちがう絵として見える。
+ */
+const CROPS = [
+  { ratio: "3 / 4", pos: "50% 16%", span: "narrow" },   // 顔まわり
+  { ratio: "16 / 9", pos: "50% 44%", span: "wide" },    // 帯状に
+  { ratio: "1 / 1", pos: "28% 30%", span: "square" },   // 左寄りの部分
+  { ratio: "9 / 16", pos: "50% 22%", span: "narrow" },  // 縦に深く
+  { ratio: "2 / 1", pos: "50% 72%", span: "wide" },     // 裾・足元
+  { ratio: "4 / 5", pos: "72% 34%", span: "square" },   // 右寄りの部分
+];
+
+/**
+ * 1枡。画像があればリンク付きの絵、無ければ色面だけを置く。
+ * 色面は装飾で、作品の代わりではない（外の画像を持ち込まないため）。
+ */
+function cell(entry, { ratio, pos, cls, eager = false, cap = "" } = {}) {
+  const box = `aspect-ratio:${ratio};object-position:${pos}`;
+  if (!entry) {
+    return `<span class="${cls} ${cls}--empty"><span class="ph" style="aspect-ratio:${ratio}"></span>${cap}</span>`;
+  }
+  return `<a class="${cls}" href="${esc(entry.href)}">
+      <img class="${cls}__img" src="${esc(entry.src)}" alt="${esc(entry.alt)}" style="${box}"
+        loading="${eager ? "eager" : "lazy"}" decoding="async"${eager ? ' fetchpriority="high"' : ""}>
+      ${cap}
+    </a>`;
+}
+
+/** 画像の外側に置く小さな見出し。絵の上には重ねない */
+const cap = (title, meta) => (title || meta
+  ? `<span class="cap">${title ? `<span class="cap__title">${esc(title)}</span>` : ""}${
+      meta ? `<span class="cap__meta num">${esc(meta)}</span>` : ""}</span>`
+  : "");
+
+const year = (w) => String(w?.createdOn ?? "").slice(0, 4);
+const dotted = (w) => String(w?.createdOn ?? "").replace(/-/g, ".");
+
 /* --- 02 FEATURE ------------------------------------------- */
-/** 大判1点＋小判2点の非対称。いま最も見せたい作品を雑誌の特集のように */
-function featureHTML(slot, { url, works }) {
-  const list = (works.featured.length ? works.featured : works.all).slice(0, 3);
-  if (!list.length) return "";
-  const [lead, ...rest] = list;
+/**
+ * いま一番見せたい1点を、画面の大部分を使って大きく置く。
+ * 文字は絵の外、右下に寄せる（中央に小さくまとめない）。
+ */
+function featureHTML(slot, { url, works, pool }) {
+  const lead = works.featured[0] ?? works.all[0] ?? null;
+  const shot = lead
+    ? { src: lead.mainImage, alt: lead.altText ?? lead.title, href: workHref(lead, url), work: lead }
+    : pick(pool, 0);
+  const note = (lead?.description ?? "").trim().split(/\n|。/)[0].slice(0, 60);
+
   return `
-  <section class="sec sec--feature">
+  <section class="sec sec--feature" data-reveal>
     ${head(slot)}
     <div class="feature">
-      <a class="feature__lead" href="${workHref(lead, url)}">
-        ${img(url(lead.mainImage), lead.altText, "feature__img")}
-        <span class="cap"><span class="cap__title">${esc(lead.title)}</span>
-          <span class="cap__meta num">${esc(String(lead.createdOn ?? "").replace(/-/g, "."))}</span></span>
-      </a>
-      <div class="feature__side">
-        ${rest.map((w) => `
-        <a class="feature__item" href="${workHref(w, url)}">
-          ${img(url(w.mainImage), w.altText, "feature__img")}
-          <span class="cap"><span class="cap__title">${esc(w.title)}</span></span>
-        </a>`).join("")}
+      <div class="feature__stage">
+        ${cell(shot, { ratio: "5 / 4", pos: "50% 38%", cls: "feature__lead", eager: true })}
+      </div>
+      <div class="feature__aside">
+        ${lead ? `<p class="feature__name">${esc(lead.title)}</p>` : ""}
+        ${lead && year(lead) ? `<p class="feature__year num">${esc(year(lead))}</p>` : ""}
+        ${note ? `<p class="feature__note">${esc(note)}</p>` : ""}
+        <p class="sec__more"><a class="link-arrow" href="${
+          lead ? workHref(lead, url) : url(slot.href || "/works/")}">${
+          esc(lead ? "VIEW WORK" : slot.linkLabel || "VIEW WORKS")}</a></p>
       </div>
     </div>
-    ${more(slot, url)}
   </section>`;
 }
 
 /* --- 03 DETAILS ------------------------------------------- */
-/** 大胆にトリミングした横長ストリップ。一覧とは違う発見をつくる */
-function detailsHTML(slot, { url, works }) {
-  const list = works.all.filter((w) => w.mainImage).slice(0, 6);
-  if (list.length < 2) return "";
+/**
+ * 作品の一部だけを大胆に切り取って横へ並べる帯。
+ * 比率も切り取る場所も枡ごとに変える。完成画像の縮小版は並べない。
+ */
+function detailsHTML(slot, { url, pool }) {
+  // 在庫がある分だけ順に使う。1枚しか無いときは切り取る場所で差をつける
+  const cells = CROPS.map((c, i) => {
+    const entry = pick(pool, i);
+    return `<div class="strip__cell strip__cell--${c.span}" role="listitem">
+        ${cell(entry, { ratio: c.ratio, pos: c.pos, cls: "strip__shot" })}
+      </div>`;
+  }).join("");
+
   return `
-  <section class="sec sec--details">
+  <section class="sec sec--details" data-reveal>
     ${head(slot)}
-    <div class="strip" role="list">
-      ${list.map((w, i) => `
-      <a class="strip__cell" role="listitem" href="${workHref(w, url)}" style="--crop:${(i % 3) * 22 + 28}%">
-        ${img(url(w.mainImage), w.altText, "strip__img")}
-      </a>`).join("")}
-    </div>
-    ${more(slot, url)}
+    <div class="strip" role="list">${cells}</div>
   </section>`;
 }
 
 /* --- 04 COLOR STORY --------------------------------------- */
-/** 同じ色・季節・モチーフの3〜5点を編集して並べる */
+/** 以前の設定を残している人のための区画。段差をつけて並べる */
 function colorStoryHTML(slot, { url, works }) {
   const tagged = slot.tag ? works.all.filter((w) => (w.tags ?? []).includes(slot.tag)) : works.all;
   const list = tagged.slice(0, 5);
   if (list.length < 3) return "";
   return `
-  <section class="sec sec--color" style="${style(slot)}">
+  <section class="sec sec--color" style="${style(slot)}" data-reveal>
     ${head(slot)}
     ${slot.tag ? `<p class="sec__lead">${esc(slot.tag)}</p>` : ""}
     <div class="color-row">
@@ -2162,64 +2311,90 @@ function colorStoryHTML(slot, { url, works }) {
   </section>`;
 }
 
-/* --- 05 NEW ------------------------------------------------ */
-/** 最近の作品を、カードではなく大小の画像グリッドで */
-function newHTML(slot, { url, works }) {
-  const list = [...works.all]
-    .sort((a, b) => String(b.createdOn ?? "").localeCompare(String(a.createdOn ?? "")))
-    .slice(0, 6);
-  if (!list.length) return "";
+/* --- 05 SELECTED ------------------------------------------ */
+/**
+ * 大きな縦長1点・横長2点・正方形1点の非対称な組み。
+ * 同じ大きさの枠を並べない。題名は絵の外に小さく置く。
+ */
+const SELECTED_SHAPES = [
+  { key: "tall", ratio: "3 / 4", pos: "50% 26%" },
+  { key: "wide", ratio: "16 / 9", pos: "50% 40%" },
+  { key: "wide2", ratio: "16 / 10", pos: "50% 52%" },
+  { key: "square", ratio: "1 / 1", pos: "42% 30%" },
+];
+
+function selectedHTML(slot, { url, works, pool }) {
+  // FEATURE で大きく出した1点は、点数に余裕があれば外す（同じ絵が続かないように）
+  const lead = works.featured[0] ?? works.all[0] ?? null;
+  const sorted = [...works.all]
+    .sort((a, b) => String(b.createdOn ?? "").localeCompare(String(a.createdOn ?? "")));
+  const recent = works.all.length > 4 ? sorted.filter((w) => w.id !== lead?.id) : sorted;
+
+  const items = SELECTED_SHAPES.map((shape, i) => {
+    const w = recent[i];
+    const entry = w
+      ? { src: w.mainImage, alt: w.altText ?? w.title, href: workHref(w, url), work: w }
+      : pick(pool, i + 1);
+    return `<div class="picks__item picks__item--${shape.key}">
+        ${cell(entry, { ratio: shape.ratio, pos: shape.pos, cls: "picks__shot",
+          cap: cap(w?.title ?? "", w ? dotted(w) : "") })}
+      </div>`;
+  }).join("");
+
   return `
-  <section class="sec sec--new">
-    ${head(slot)}
-    <div class="mixed">
-      ${list.map((w, i) => `
-      <a class="mixed__item${i % 5 === 0 ? " mixed__item--tall" : i % 4 === 3 ? " mixed__item--wide" : ""}"
-         href="${workHref(w, url)}">
-        ${img(url(w.mainImage), w.altText, "mixed__img")}
-        <span class="cap"><span class="cap__title">${esc(w.title)}</span></span>
-      </a>`).join("")}
-    </div>
+  <section class="sec sec--picks" data-reveal>
+    ${head(slot, { count: works.all.length })}
+    <div class="picks">${items}</div>
     ${more(slot, url)}
   </section>`;
 }
 
 /* --- 06 SPOTLIGHT ------------------------------------------ */
-/** 1シリーズを横幅いっぱいに特集し、SERIES詳細へ渡す */
-function spotlightHTML(slot, { url, works, series }) {
+/**
+ * ページの終盤。背景色を変えて横幅いっぱいに1点（または1シリーズ）を置く。
+ * ここまでの白い流れに対する視覚的な切り替え。
+ */
+function spotlightHTML(slot, { url, works, series, pool }) {
   const target = slot.seriesSlug
     ? series.find((s) => s.slug === slot.seriesSlug)
     : series.find((s) => works.all.some((w) => w.series === s.slug));
-  if (!target) return "";
-  const list = works.all.filter((w) => w.series === target.slug).slice(0, 4);
-  if (!list.length) return "";
-  const [cover, ...rest] = list;
+  const list = target ? works.all.filter((w) => w.series === target.slug) : [];
+
+  const solo = !target ? (works.featured[1] ?? works.featured[0] ?? works.all[works.all.length - 1] ?? null) : null;
+  const shot = list[0]
+    ? { src: list[0].mainImage, alt: list[0].altText ?? list[0].title, href: seriesHref(target, url) }
+    : solo
+      ? { src: solo.mainImage, alt: solo.altText ?? solo.title, href: workHref(solo, url) }
+      : pick(pool, pool.length - 1);
+
+  const title = target?.name ?? solo?.title ?? "";
+  const copy = (target?.copy ?? solo?.description ?? "").trim().split(/\n/)[0].slice(0, 90);
+  const href = target ? seriesHref(target, url) : solo ? workHref(solo, url) : url(slot.href || "/works/");
+
   return `
-  <section class="sec sec--spotlight" style="${style(slot)}">
+  <section class="sec sec--spotlight" style="${style(slot)}" data-reveal>
     <div class="spotlight">
-      <a class="spotlight__cover" href="${seriesHref(target, url)}">
-        ${img(url(cover.mainImage ?? target.cover), cover.altText, "spotlight__img")}
-      </a>
+      <div class="spotlight__stage">
+        ${cell(shot, { ratio: "4 / 3", pos: "50% 34%", cls: "spotlight__cover" })}
+      </div>
       <div class="spotlight__body">
         <p class="sec__eyebrow">${esc(slot.title || "SPOTLIGHT")}</p>
-        <h2 class="spotlight__title">${esc(target.name)}</h2>
-        ${target.copy ? `<p class="spotlight__copy">${esc(target.copy)}</p>` : ""}
-        <div class="spotlight__thumbs">
-          ${rest.map((w) => `<a href="${workHref(w, url)}">${img(url(w.mainImage), w.altText, "")}</a>`).join("")}
-        </div>
-        <p class="sec__more"><a class="link-arrow" href="${seriesHref(target, url)}">VIEW SERIES</a></p>
+        ${title ? `<h2 class="spotlight__title">${esc(title)}</h2>` : ""}
+        ${copy ? `<p class="spotlight__copy">${esc(copy)}</p>` : ""}
+        <p class="sec__more"><a class="link-arrow" href="${esc(href)}">${
+          esc(target ? "VIEW SERIES" : slot.linkLabel || "VIEW MORE")}</a></p>
       </div>
     </div>
   </section>`;
 }
 
 /* --- 07 ARCHIVE -------------------------------------------- */
-/** 過去作を小さなモザイクで。量そのものを見せる */
+/** 以前の設定を残している人のための区画。量そのものを見せる */
 function archiveHTML(slot, { url, works }) {
   const list = works.all.slice(0, 40);
   if (list.length < 4) return "";
   return `
-  <section class="sec sec--archive">
+  <section class="sec sec--archive" data-reveal>
     ${head(slot, { count: works.all.length })}
     <div class="mosaic">
       ${list.map((w) => `<a class="mosaic__cell" href="${workHref(w, url)}"
@@ -2233,12 +2408,12 @@ function archiveHTML(slot, { url, works }) {
 
 const LAYOUTS = {
   hero: heroHTML, feature: featureHTML, details: detailsHTML, colorstory: colorStoryHTML,
-  new: newHTML, spotlight: spotlightHTML, archive: archiveHTML,
+  new: selectedHTML, spotlight: spotlightHTML, archive: archiveHTML,
 };
 
 /**
  * @param {object} slot
- * @param {{url?: Function, first?: boolean, works?: object, series?: array}} opts
+ * @param {{url?: Function, first?: boolean, works?: array, series?: array, pool?: array}} opts
  */
 function homeSlotHTML(slot, opts = {}) {
   const url = opts.url ?? ((p) => p);
@@ -2248,12 +2423,17 @@ function homeSlotHTML(slot, opts = {}) {
     first: opts.first,
     works: { all, featured: all.filter((w) => w.featured) },
     series: opts.series ?? [],
+    pool: opts.pool ?? buildPool(all, opts.slots ?? [], url),
   };
   return (LAYOUTS[slot.layout] ?? (() => ""))(slot, ctx);
 }
 
-const homeSlotsHTML = (slots, opts = {}) =>
-  slots.map((slot, i) => homeSlotHTML(slot, { ...opts, first: i === 0 })).join("\n");
+const homeSlotsHTML = (slots, opts = {}) => {
+  const url = opts.url ?? ((p) => p);
+  // 使える画像は一度だけ集めて、全部の区画で使い回す
+  const pool = buildPool(opts.works ?? [], slots, url);
+  return slots.map((slot, i) => homeSlotHTML(slot, { ...opts, url, pool, first: i === 0 })).join("\n");
+};
 
 
   /**
@@ -2647,6 +2827,23 @@ if (loader) {
   root.innerHTML = home.homeSlotsHTML(store.visibleHomeSlots(), {
     url, works: store.publicWorks(), series: store.mergedSeries(), about: store.about(),
   });
+
+  /* --- 寄ったら短くフェードして現れる ---------------------- */
+  const calmMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const targets = [...root.querySelectorAll("[data-reveal]")];
+  if (targets.length && "IntersectionObserver" in window && !calmMotion.matches) {
+    document.body.dataset.revealReady = "true";
+    const seen = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        e.target.dataset.shown = "true";
+        seen.unobserve(e.target);
+      }
+    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.06 });
+    targets.forEach((t) => seen.observe(t));
+    // 画面に入らないまま終わることがないよう、少し経ったら全部出す
+    setTimeout(() => targets.forEach((t) => { t.dataset.shown = "true"; }), 4000);
+  }
 
   /* --- キービジュアル ------------------------------------- */
   const kv = root.querySelector("[data-kv]");
@@ -3401,7 +3598,7 @@ if (loader) {
       ["feature", "特集（大1点＋小2点）"],
       ["details", "ディテールの帯"],
       ["colorstory", "色でまとめる"],
-      ["new", "新着のグリッド"],
+      ["new", "選りすぐり（非対称グリッド）"],
       ["spotlight", "シリーズ特集"],
       ["archive", "モザイク"],
     ];
