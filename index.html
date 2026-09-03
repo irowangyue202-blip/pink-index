@@ -920,14 +920,36 @@ body[data-reveal-ready] [data-reveal][data-shown] { opacity: 1; transform: none;
 /* --- 03 DETAILS：比率のちがう切り取りを横へ ----------------- */
 .sec--details { padding-inline: 0; background: var(--c-pink-mist); }
 .sec--details .sec__head { padding-inline: var(--page-x); }
+
+/* 横へ流す帯。つかんで動かせて、端がつながっている */
+.rail { position: relative; }
 .strip {
   display: flex; gap: clamp(0.5rem, 1.6vw, 1.25rem);
   overflow-x: auto; scroll-snap-type: x proximity;
-  padding-inline: var(--page-x); scrollbar-width: none;
-  overscroll-behavior-x: contain;
+  padding-inline: var(--page-x);
+  scrollbar-width: none; overscroll-behavior-x: contain;
+  cursor: grab; touch-action: pan-x pan-y;
 }
 .strip::-webkit-scrollbar { display: none; }
+.rail[data-dragging] .strip { cursor: grabbing; scroll-snap-type: none; }
+.rail[data-dragging] .strip a { pointer-events: none; }
 .strip__cell { flex: 0 0 auto; scroll-snap-align: center; }
+
+/* いま帯のどこを見ているかを示す細い棒。つまんで動かせる */
+.rail__bar {
+  margin: clamp(1rem, 3vw, 2rem) var(--page-x) 0;
+  height: 3px; border-radius: 999px;
+  background: color-mix(in srgb, var(--c-ink) 12%, transparent);
+  position: relative; cursor: pointer;
+}
+.rail__thumb {
+  position: absolute; inset-block: -1px; left: 0; width: 20%;
+  border-radius: 999px; background: var(--c-ink-muted);
+}
+.rail:not([data-rail-ready]) .rail__bar { display: none; }
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .rail__bar { background: var(--c-hairline); }
+}
 /* 枡ごとに幅を変えて、同じ形の繰り返しに見せない */
 .strip__cell--narrow { width: min(46vw, 300px); }
 .strip__cell--square { width: min(52vw, 360px); }
@@ -1014,6 +1036,7 @@ body[data-reveal-ready] [data-reveal][data-shown] { opacity: 1; transform: none;
 
 /* 動きを減らす設定のときは、フェードも拡大も止める */
 @media (prefers-reduced-motion: reduce) {
+  .kv__track, .strip { scroll-behavior: auto; }
   body[data-reveal-ready] [data-reveal] { opacity: 1; transform: none; transition: none; }
   .feature__lead img, .strip__shot img, .picks__shot img, .spotlight__cover img { transition: none; }
   .feature__lead:hover img, .strip__shot:hover img,
@@ -1174,7 +1197,7 @@ body[data-chrome="off"] > .site-footer { display: none; }
   </footer>
 <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
 
-<script id="routes" type="application/json">{"/":{"title":"PINK INDEX","chrome":true,"bodyClass":"has-hero","pre":"<div class=\"loader\" id=\"loader\" data-state=\"load\" role=\"dialog\" aria-modal=\"true\" aria-label=\"読み込み中\">\n  <div class=\"loader__top\">\n    <span>PINK INDEX</span>\n    <span>ILLUSTRATION ARCHIVE</span>\n  </div>\n  <p class=\"loader__count\" aria-hidden=\"true\">\n    <span class=\"loader__range\">01—100</span>\n    <span class=\"loader__digits loader__digits--l\" id=\"loader-d1\">0</span><span\n          class=\"loader__digits loader__digits--r\" id=\"loader-d2\">0</span>\n    <span class=\"loader__pct\">%</span>\n  </p>\n  <p class=\"visually-hidden\" id=\"loader-status\" aria-live=\"polite\">サイトを読み込んでいます 0%</p>\n</div>\n<div class=\"perimeter\" id=\"perimeter\" aria-hidden=\"true\">\n  <svg preserveAspectRatio=\"none\" id=\"perimeter-svg\">\n    <rect class=\"perimeter__track\" id=\"perimeter-track\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <rect class=\"perimeter__line\" id=\"perimeter-line\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <circle class=\"perimeter__tip\" id=\"perimeter-tip\" r=\"3.5\" cx=\"0\" cy=\"0\"></circle>\n  </svg>\n</div>\n<div class=\"home-frame\" id=\"home-frame\"></div>","main":"\n<div id=\"home-slots\">\n\n  <section class=\"kv\" data-kv>\n    <div class=\"kv__track\" id=\"kv-track\" tabindex=\"0\"\n         role=\"group\" aria-roledescription=\"カルーセル\" aria-label=\"キービジュアル\">\n      \n        <article class=\"kv__slide\" style=\"--hs-bg:#FFF9FC;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-tsize:1;--hs-tls:-0.02em;--hs-tlh:0.95;--hs-trot:0deg\" data-tone=\"dark\" data-tplate=\"none\" data-kv-slide=\"0\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"1 / 1\">\n          \n          <div class=\"kv__free\">\n          <div class=\"kv__type\">\n            \n            <h1 class=\"kv__title\">PINK INDEX</h1>\n            \n            <a class=\"kv__link\" href=\"#/works/\">VIEW WORKS</a>\n          </div></div>\n        </article>\n    </div>\n    \n  </section>\n\n  <section class=\"sec sec--feature\" data-side=\"right\"\n           data-align=\"bottom\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">FEATURE</h2>\n      \n    </div>\n    <div class=\"feature\">\n      <div class=\"feature__stage\">\n        <span class=\"feature__lead feature__lead--empty\"><span class=\"ph\" style=\"aspect-ratio:5 / 4\"></span></span>\n      </div>\n      <div class=\"feature__aside\">\n        \n        \n        \n        <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW WORKS</a></p>\n      </div>\n    </div>\n  </section>\n\n  <section class=\"sec sec--details\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">DETAILS</h2>\n      \n    </div>\n    <div class=\"strip\" role=\"list\"><div class=\"strip__cell strip__cell--narrow\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:3 / 4\"></span></span>\n      </div><div class=\"strip__cell strip__cell--wide\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 9\"></span></span>\n      </div><div class=\"strip__cell strip__cell--square\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:1 / 1\"></span></span>\n      </div><div class=\"strip__cell strip__cell--narrow\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:9 / 16\"></span></span>\n      </div><div class=\"strip__cell strip__cell--wide\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:2 / 1\"></span></span>\n      </div><div class=\"strip__cell strip__cell--square\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:4 / 5\"></span></span>\n      </div></div>\n  </section>\n\n  <section class=\"sec sec--picks\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">SELECTED</h2>\n      \n    </div>\n    <div class=\"picks\"><div class=\"picks__item picks__item--tall\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:3 / 4\"></span></span>\n      </div><div class=\"picks__item picks__item--wide\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 9\"></span></span>\n      </div><div class=\"picks__item picks__item--wide2\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 10\"></span></span>\n      </div><div class=\"picks__item picks__item--square\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:1 / 1\"></span></span>\n      </div></div>\n    <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW ALL</a></p>\n  </section>\n\n  <section class=\"sec sec--spotlight\" style=\"--hs-bg:#171417;--hs-fg:#FFFFFF;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-tsize:1;--hs-tls:-0.02em;--hs-tlh:0.95;--hs-trot:0deg\"\n           data-side=\"right\" data-reveal>\n    <div class=\"spotlight\">\n      <div class=\"spotlight__stage\">\n        <span class=\"spotlight__cover spotlight__cover--empty\"><span class=\"ph\" style=\"aspect-ratio:4 / 3\"></span></span>\n      </div>\n      <div class=\"spotlight__body\">\n        <p class=\"sec__eyebrow\">SPOTLIGHT</p>\n        \n        \n        <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW MORE</a></p>\n      </div>\n    </div>\n  </section>\n</div>\n"},"/works/":{"title":"WORKS — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">WORKS</h1>\n    </div>\n    \n  </div>\n<div class=\"page\">\n  <div class=\"filters\" role=\"search\" data-works-filter hidden>\n    <div class=\"filters__row\">\n      <label class=\"visually-hidden\" for=\"works-search\">作品を検索</label>\n      <input class=\"input filters__search\" id=\"works-search\" type=\"search\" placeholder=\"SEARCH\">\n      <span class=\"spacer\"></span>\n      <span class=\"filters__count\"><span class=\"num\" id=\"works-count\">0</span> WORKS</span>\n    </div>\n    <div class=\"filters__row\" id=\"works-cats\"></div>\n    <div class=\"filters__row filters__row--tags\" id=\"works-tags\"></div>\n  </div>\n\n  <div class=\"work-grid\" id=\"works-grid\"></div>\n  <p class=\"coming\" id=\"works-empty\">COMING SOON</p>\n</div>\n"},"/work/":{"title":"WORK — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n<div id=\"work-detail\" data-work-detail>\n  <h1 class=\"visually-hidden\">WORK</h1>\n  <p class=\"coming\">COMING SOON</p>\n</div>\n"},"/series/":{"title":"SERIES — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n<div id=\"series-view\" data-series-view>\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">SERIES</h1>\n    </div>\n    \n  </div>\n<div class=\"page section\"><p class=\"coming\">COMING SOON</p></div>\n</div>\n"}}</script>
+<script id="routes" type="application/json">{"/":{"title":"PINK INDEX","chrome":true,"bodyClass":"has-hero","pre":"<div class=\"loader\" id=\"loader\" data-state=\"load\" role=\"dialog\" aria-modal=\"true\" aria-label=\"読み込み中\">\n  <div class=\"loader__top\">\n    <span>PINK INDEX</span>\n    <span>ILLUSTRATION ARCHIVE</span>\n  </div>\n  <p class=\"loader__count\" aria-hidden=\"true\">\n    <span class=\"loader__range\">01—100</span>\n    <span class=\"loader__digits loader__digits--l\" id=\"loader-d1\">0</span><span\n          class=\"loader__digits loader__digits--r\" id=\"loader-d2\">0</span>\n    <span class=\"loader__pct\">%</span>\n  </p>\n  <p class=\"visually-hidden\" id=\"loader-status\" aria-live=\"polite\">サイトを読み込んでいます 0%</p>\n</div>\n<div class=\"perimeter\" id=\"perimeter\" aria-hidden=\"true\">\n  <svg preserveAspectRatio=\"none\" id=\"perimeter-svg\">\n    <rect class=\"perimeter__track\" id=\"perimeter-track\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <rect class=\"perimeter__line\" id=\"perimeter-line\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <circle class=\"perimeter__tip\" id=\"perimeter-tip\" r=\"3.5\" cx=\"0\" cy=\"0\"></circle>\n  </svg>\n</div>\n<div class=\"home-frame\" id=\"home-frame\"></div>","main":"\n<div id=\"home-slots\">\n\n  <section class=\"kv\" data-kv>\n    <div class=\"kv__track\" id=\"kv-track\" tabindex=\"0\"\n         role=\"group\" aria-roledescription=\"カルーセル\" aria-label=\"キービジュアル\">\n      \n        <article class=\"kv__slide\" style=\"--hs-bg:#FFF9FC;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-tsize:1;--hs-tls:-0.02em;--hs-tlh:0.95;--hs-trot:0deg\" data-tone=\"dark\" data-tplate=\"none\" data-kv-slide=\"0\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"1 / 1\">\n          \n          <div class=\"kv__free\">\n          <div class=\"kv__type\">\n            \n            <h1 class=\"kv__title\">PINK INDEX</h1>\n            \n            <a class=\"kv__link\" href=\"#/works/\">VIEW WORKS</a>\n          </div></div>\n        </article>\n    </div>\n    \n  </section>\n\n  <section class=\"sec sec--feature\" data-side=\"right\"\n           data-align=\"bottom\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">FEATURE</h2>\n      \n    </div>\n    <div class=\"feature\">\n      <div class=\"feature__stage\">\n        <span class=\"feature__lead feature__lead--empty\"><span class=\"ph\" style=\"aspect-ratio:5 / 4\"></span></span>\n      </div>\n      <div class=\"feature__aside\">\n        \n        \n        \n        <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW WORKS</a></p>\n      </div>\n    </div>\n  </section>\n\n  <section class=\"sec sec--details\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">DETAILS</h2>\n      \n    </div>\n    <div class=\"rail\" data-rail>\n      <div class=\"strip\" role=\"list\" data-rail-track><div class=\"strip__cell strip__cell--narrow\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:3 / 4\"></span></span>\n      </div><div class=\"strip__cell strip__cell--wide\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 9\"></span></span>\n      </div><div class=\"strip__cell strip__cell--square\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:1 / 1\"></span></span>\n      </div><div class=\"strip__cell strip__cell--narrow\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:9 / 16\"></span></span>\n      </div><div class=\"strip__cell strip__cell--wide\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:2 / 1\"></span></span>\n      </div><div class=\"strip__cell strip__cell--square\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:4 / 5\"></span></span>\n      </div></div>\n      <div class=\"rail__bar\" data-rail-bar>\n        <span class=\"rail__thumb\" data-rail-thumb></span>\n      </div>\n    </div>\n  </section>\n\n  <section class=\"sec sec--picks\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">SELECTED</h2>\n      \n    </div>\n    <div class=\"picks\"><div class=\"picks__item picks__item--tall\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:3 / 4\"></span></span>\n      </div><div class=\"picks__item picks__item--wide\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 9\"></span></span>\n      </div><div class=\"picks__item picks__item--wide2\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 10\"></span></span>\n      </div><div class=\"picks__item picks__item--square\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:1 / 1\"></span></span>\n      </div></div>\n    <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW ALL</a></p>\n  </section>\n\n  <section class=\"sec sec--spotlight\" style=\"--hs-bg:#171417;--hs-fg:#FFFFFF;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-tsize:1;--hs-tls:-0.02em;--hs-tlh:0.95;--hs-trot:0deg\"\n           data-side=\"right\" data-reveal>\n    <div class=\"spotlight\">\n      <div class=\"spotlight__stage\">\n        <span class=\"spotlight__cover spotlight__cover--empty\"><span class=\"ph\" style=\"aspect-ratio:4 / 3\"></span></span>\n      </div>\n      <div class=\"spotlight__body\">\n        <p class=\"sec__eyebrow\">SPOTLIGHT</p>\n        \n        \n        <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW MORE</a></p>\n      </div>\n    </div>\n  </section>\n</div>\n"},"/works/":{"title":"WORKS — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">WORKS</h1>\n    </div>\n    \n  </div>\n<div class=\"page\">\n  <div class=\"filters\" role=\"search\" data-works-filter hidden>\n    <div class=\"filters__row\">\n      <label class=\"visually-hidden\" for=\"works-search\">作品を検索</label>\n      <input class=\"input filters__search\" id=\"works-search\" type=\"search\" placeholder=\"SEARCH\">\n      <span class=\"spacer\"></span>\n      <span class=\"filters__count\"><span class=\"num\" id=\"works-count\">0</span> WORKS</span>\n    </div>\n    <div class=\"filters__row\" id=\"works-cats\"></div>\n    <div class=\"filters__row filters__row--tags\" id=\"works-tags\"></div>\n  </div>\n\n  <div class=\"work-grid\" id=\"works-grid\"></div>\n  <p class=\"coming\" id=\"works-empty\">COMING SOON</p>\n</div>\n"},"/work/":{"title":"WORK — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n<div id=\"work-detail\" data-work-detail>\n  <h1 class=\"visually-hidden\">WORK</h1>\n  <p class=\"coming\">COMING SOON</p>\n</div>\n"},"/series/":{"title":"SERIES — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n<div id=\"series-view\" data-series-view>\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">SERIES</h1>\n    </div>\n    \n  </div>\n<div class=\"page section\"><p class=\"coming\">COMING SOON</p></div>\n</div>\n"}}</script>
 <script id="assets" type="application/json">{}</script>
 <script>
 /* --- ルーター ---------------------------------------------
@@ -1386,6 +1409,13 @@ function load() {
   return memory;
 }
 
+/**
+ * 重ならない番号。
+ * 続けて足したときに時刻だけでは同じ値になるので、乱数を足す。
+ */
+const uid = (prefix) =>
+  `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
 /** 別の窓（管理画面の枠）で書き換えられた内容を読み直す */
 function reload() { memory = null; return load(); }
 
@@ -1481,7 +1511,7 @@ function addWork({ title, mainImage, images = [], createdOn, category, tags = []
   if (!altText?.trim()) return { ok: false, reason: "画像の説明（代替テキスト）を入れてください。" };
 
   const work = {
-    id: `w-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    id: uid("w"),
     slug: slug ? uniqueSlug(slug) : uniqueSlug(title),
     title: title.trim(), mainImage, images: [...images],
     createdOn: createdOn || new Date().toISOString().slice(0, 10),
@@ -1599,7 +1629,7 @@ function updateHomeSlot(id, patch) {
 function addHomeSlot(layout = "feature") {
   const slots = homeSlotsAll();
   const slot = {
-    id: `hs-u-${Date.now().toString(36)}`, layout, order: slots.length + 1, published: false,
+    id: uid("hs-u"), layout, order: slots.length + 1, published: false,
     title: "NEW SECTION", href: "/works/", linkLabel: "VIEW MORE", custom: true,
   };
   return { ...writeHome([...slots, slot]), slot };
@@ -1639,7 +1669,7 @@ function addHomeSlide(slotId) {
   const slot = homeSlotsAll().find((s) => s.id === slotId);
   if (!slot) return { ok: false, reason: "この区画は見つかりません。" };
   const slide = {
-    id: `sl-${Date.now().toString(36)}`, eyebrow: "", title: "", subtitle: "", copy: "",
+    id: uid("sl"), eyebrow: "", title: "", subtitle: "", copy: "",
     href: "/works/", linkLabel: "VIEW WORK", media: "", mediaMobile: "",
     focus: "50% 40%", zoom: 1, bg: "#FFF9FC", fg: "#171417", tone: "dark",
     tx: 0, ty: 100, tw: 62, align: "left",
@@ -2010,7 +2040,12 @@ function detailsHTML(slot, { url, works, pool }) {
   return `
   <section class="sec sec--details" data-reveal>
     ${head(slot)}
-    <div class="strip" role="list">${cells}</div>
+    <div class="rail" data-rail>
+      <div class="strip" role="list" data-rail-track>${cells}</div>
+      <div class="rail__bar" data-rail-bar>
+        <span class="rail__thumb" data-rail-thumb></span>
+      </div>
+    </div>
   </section>`;
 }
 
@@ -2579,63 +2614,204 @@ if (loader) {
     setTimeout(() => targets.forEach((t) => { t.dataset.shown = "true"; }), 4000);
   }
 
-  /* --- キービジュアル ------------------------------------- */
+  /* --- 横へ流す帯（DETAILS）------------------------------
+     つかんで動かす・細い棒をつまむ・指で払う のどれでも動く。
+     マウスだけの環境では、はみ出していても手がかりが無かったので棒を出す。
+     ------------------------------------------------------- */
+  for (const rail of root.querySelectorAll("[data-rail]")) {
+    const track = rail.querySelector("[data-rail-track]");
+    const bar = rail.querySelector("[data-rail-bar]");
+    const thumb = rail.querySelector("[data-rail-thumb]");
+    if (!track) continue;
+
+    const room = () => Math.max(0, track.scrollWidth - track.clientWidth);
+
+    const paintBar = () => {
+      const max = room();
+      if (max < 8) { delete rail.dataset.railReady; return; }
+      rail.dataset.railReady = "true";
+      const ratio = Math.min(1, track.clientWidth / track.scrollWidth);
+      const p = track.scrollLeft / max;
+      thumb.style.width = `${Math.max(8, ratio * 100)}%`;
+      thumb.style.left = `${p * (100 - Math.max(8, ratio * 100))}%`;
+    };
+
+    let grab = null;
+    const stopDrag = () => {
+      if (!grab) return;
+      try { grab.on.releasePointerCapture(grab.id); } catch { /* 掴めない環境もある */ }
+      delete rail.dataset.dragging;
+      track.style.scrollBehavior = "";
+      track.style.scrollSnapType = "";
+      // つかんで動かしたときは、離した先のリンクを開かない
+      if (grab.moved > 8) { rail.dataset.justDragged = "true"; setTimeout(() => { delete rail.dataset.justDragged; }, 0); }
+      grab = null;
+    };
+
+    track.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "touch" || e.button !== 0) return;   // 指は元から動く
+      grab = { on: track, id: e.pointerId, x: e.clientX, from: track.scrollLeft, moved: 0, kind: "track" };
+      track.style.scrollBehavior = "auto";
+      track.style.scrollSnapType = "none";
+      try { track.setPointerCapture(e.pointerId); } catch { /* 同上 */ }
+    });
+
+    if (bar) bar.addEventListener("pointerdown", (e) => {
+      const max = room();
+      if (max < 8) return;
+      grab = { on: bar, id: e.pointerId, x: e.clientX, from: track.scrollLeft, moved: 99, kind: "bar",
+               rect: bar.getBoundingClientRect() };
+      rail.dataset.dragging = "bar";
+      track.style.scrollBehavior = "auto";
+      try { bar.setPointerCapture(e.pointerId); } catch { /* 同上 */ }
+      track.scrollLeft = ((e.clientX - grab.rect.left) / grab.rect.width) * max;
+      e.preventDefault();
+    });
+
+    addEventListener("pointermove", (e) => {
+      if (!grab || e.pointerId !== grab.id) return;
+      if (grab.kind === "bar") {
+        track.scrollLeft = ((e.clientX - grab.rect.left) / grab.rect.width) * room();
+        return;
+      }
+      const dx = e.clientX - grab.x;
+      grab.moved = Math.max(grab.moved, Math.abs(dx));
+      if (grab.moved > 4) rail.dataset.dragging = "track";
+      track.scrollLeft = grab.from - dx;
+    });
+    addEventListener("pointerup", stopDrag);
+    addEventListener("pointercancel", stopDrag);
+
+    track.addEventListener("click", (e) => {
+      if (rail.dataset.justDragged) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    // 描き直しは軽いので、そのまま呼ぶ（rAF は環境によって走らない）
+    track.addEventListener("scroll", paintBar, { passive: true });
+    addEventListener("resize", paintBar, { passive: true });
+    paintBar();
+    // 絵が入ったあとで幅が決まるので、読み終わってからもう一度測る
+    addEventListener("load", paintBar);
+    setTimeout(paintBar, 600);
+  }
+
+  /* --- キービジュアル -------------------------------------
+     端をつないで、ぐるぐる回れるようにする。
+     先頭の前に「最後の複製」を、最後の後ろに「先頭の複製」を置き、
+     複製まで来たら同じ絵の本体へ音もなく移す。
+     ------------------------------------------------------- */
   const kv = root.querySelector("[data-kv]");
   const header = document.getElementById("site-header");
   if (!kv) return;
   const track = kv.querySelector(".kv__track");
-  const slides = [...track.querySelectorAll(".kv__slide")];
+  const real = [...track.querySelectorAll(".kv__slide")];
+  const total = real.length;
   const dots = [...kv.querySelectorAll("[data-kv-go]")];
   const prev = kv.querySelector("[data-kv-prev]");
   const next = kv.querySelector("[data-kv-next]");
 
-  let index = 0;
-  let painted = -1;
-
   /** 表示中の作品の明るさに合わせて、ヘッダーの文字色を決める */
-  const tone = () => {
-    if (header) header.dataset.tone = slides[index]?.dataset.tone === "light" ? "light" : "dark";
+  const tone = (cellEl) => {
+    if (header) header.dataset.tone = cellEl?.dataset.tone === "light" ? "light" : "dark";
   };
 
-  if (slides.length < 2) {
-    kv.querySelectorAll(".kv__arrow, .kv__dots").forEach((n) => n.remove());
-    tone();
+  if (total < 2) {
+    kv.querySelectorAll(".kv__arrow, .kv__dots").forEach((x) => x.remove());
+    tone(real[0]);
     return;
   }
 
-  const clamp = (i) => Math.max(0, Math.min(slides.length - 1, i));
-
-  /** 現在位置を、色だけでなくドット・読み上げ対象にも反映する */
-  const paint = () => {
-    painted = index;
-    dots.forEach((d, n) => d.setAttribute("aria-current", String(n === index)));
-    prev.disabled = index === 0;
-    next.disabled = index === slides.length - 1;
-    slides.forEach((s, n) => s.toggleAttribute("inert", n !== index));
-    tone();
+  /** 読み上げにも操作にも出てこない、見た目だけの複製 */
+  const twin = (src) => {
+    const c = src.cloneNode(true);
+    c.setAttribute("aria-hidden", "true");
+    c.removeAttribute("aria-label");
+    c.dataset.kvClone = "true";
+    c.querySelectorAll("a, button").forEach((x) => { x.tabIndex = -1; });
+    return c;
   };
+  track.insertBefore(twin(real[total - 1]), real[0]);
+  track.appendChild(twin(real[0]));
 
+  const cells = [...track.querySelectorAll(".kv__slide")];   // total + 2
+  const LAST = cells.length - 1;
+  /** 複製を含めた並びの位置 → 本体での番号 */
+  const at = (p) => ((p - 1) % total + total) % total;
+
+  let pos = 1;
+  let painted = -1;
   const calm = matchMedia("(prefers-reduced-motion: reduce)");
-  const goTo = (i) => {
-    index = clamp(i);
-    track.scrollTo({ left: slides[index].offsetLeft - slides[0].offsetLeft, behavior: calm.matches ? "auto" : "smooth" });
+  const left = (p) => cells[p].offsetLeft - cells[0].offsetLeft;
+
+  /** 現在地を、色・ドット・読み上げ対象に反映する */
+  const paint = () => {
+    painted = pos;
+    const cur = at(pos);
+    dots.forEach((d, k) => d.setAttribute("aria-current", String(k === cur)));
+    cells.forEach((c, k) => c.toggleAttribute("inert", k !== pos));
+    tone(cells[pos]);
+  };
+
+  /**
+   * 行き先を、複製を含めた並びの中へ収める。
+   * 何かの理由で滑りが終わらないまま次へ進んでも、並びの外を指さないようにする。
+   */
+  const inRange = (p) => (p >= 0 && p <= LAST ? p : at(p) + 1);
+
+  /** 音もなく移す（複製から本体へ戻すときに使う） */
+  const jump = (p0) => {
+    const p = inRange(p0);
+    pos = p;
+    const keep = track.style.scrollBehavior;
+    track.style.scrollBehavior = "auto";
+    track.scrollLeft = left(p);
+    track.style.scrollBehavior = keep;
     paint();
   };
 
+  const goTo = (p0) => {
+    const p = inRange(p0);
+    // 動きを減らす設定のときは滑らせない。
+    // CSS の scroll-behavior が smooth のままだと behavior:"auto" では止まらないので、
+    // その場で移す方（jump）へ回す。
+    if (calm.matches) { jump(p); wrap(); return; }
+    pos = p;
+    paint();
+    track.scrollTo({ left: left(p), behavior: "smooth" });
+    // 滑り終えたころに、複製かどうかを確かめる。
+    // scroll の通知だけに頼ると、通知が間引かれる環境で入れ替えが起きない
+    clearTimeout(settle);
+    settle = setTimeout(wrap, 700);
+  };
+
+  /**
+   * 複製まで来たら、同じ絵の本体へ入れ替える。見た目は変わらない。
+   * 滑っている途中で入れ替えると動きが途切れるので、
+   * 「行き先にぴたりと止まった」ときだけ入れ替える。
+   */
+  let settle = null;
+  const arrived = () => Math.abs(track.scrollLeft - left(pos)) < Math.max(2, track.clientWidth * 0.01);
+  const wrap = () => {
+    if (!arrived()) return;
+    if (pos === 0) jump(total);
+    else if (pos === LAST) jump(1);
+  };
   const sync = () => {
-    const i = clamp(Math.round(track.scrollLeft / track.clientWidth));
-    if (i === painted) return;
-    index = i;
-    paint();
+    const w = track.clientWidth || 1;
+    const i = Math.max(0, Math.min(LAST, Math.round(track.scrollLeft / w)));
+    if (i !== painted) { pos = i; paint(); }
+    // 止まってから確かめる（指で払ったあとの滑りにも間に合わせる）
+    clearTimeout(settle);
+    settle = setTimeout(wrap, 180);
   };
 
-  prev.addEventListener("click", () => goTo(index - 1));
-  next.addEventListener("click", () => goTo(index + 1));
-  dots.forEach((d) => d.addEventListener("click", () => goTo(Number(d.dataset.kvGo))));
+  prev.addEventListener("click", () => goTo(pos - 1));
+  next.addEventListener("click", () => goTo(pos + 1));
+  dots.forEach((d) => d.addEventListener("click", () => goTo(Number(d.dataset.kvGo) + 1)));
 
   track.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight") { e.preventDefault(); goTo(index + 1); }
-    if (e.key === "ArrowLeft") { e.preventDefault(); goTo(index - 1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); goTo(pos + 1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); goTo(pos - 1); }
   });
 
   /* つかんで振る・絵の左右半分のクリック */
@@ -2672,7 +2848,7 @@ if (loader) {
     drag = null;
     if (moved > 8) {
       const step = Math.abs(dx) > track.clientWidth * 0.12 ? (dx < 0 ? 1 : -1) : 0;
-      goTo(index + step);
+      goTo(pos + step);
       kv.dataset.justDragged = "true";
       setTimeout(() => { delete kv.dataset.justDragged; }, 0);
     }
@@ -2683,16 +2859,11 @@ if (loader) {
   track.addEventListener("click", (e) => {
     if (kv.dataset.justDragged || interactive(e.target)) return;
     const r = track.getBoundingClientRect();
-    goTo(e.clientX < r.left + r.width / 2 ? index - 1 : index + 1);
+    goTo(e.clientX < r.left + r.width / 2 ? pos - 1 : pos + 1);
   });
 
-  let ticking = false;
-  track.addEventListener("scroll", () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => { sync(); ticking = false; });
-  }, { passive: true });
-  addEventListener("resize", sync, { passive: true });
+  track.addEventListener("scroll", sync, { passive: true });
+  addEventListener("resize", () => jump(pos), { passive: true });
 
   /* 自動送りは既定で止まっている（管理画面でONにしたときだけ動く） */
   const every = Number(kv.dataset.autoplay) || 0;
@@ -2701,7 +2872,7 @@ if (loader) {
     const stop = () => { clearInterval(timer); timer = null; };
     const start = () => {
       if (timer || document.hidden) return;
-      timer = setInterval(() => goTo(index + 1 >= slides.length ? 0 : index + 1), every * 1000);
+      timer = setInterval(() => goTo(pos + 1), every * 1000);
     };
     kv.addEventListener("pointerenter", stop);
     kv.addEventListener("pointerleave", start);
@@ -2711,7 +2882,8 @@ if (loader) {
     start();
   }
 
-  paint();
+  // 本体の1枚目から始める（左隣には最後の絵が控えている）
+  jump(1);
 })();
 
 /**
