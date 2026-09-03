@@ -53,4 +53,9 @@ node tools/check-links.mjs    # リンク検査
 node tools/check-layout.mjs   # 重なり・はみ出し検査
 ```
 
+`dist-single/pink-index.html` を `index.html`、
+`dist-single/pink-index-studio.html` を `studio.html` として置きます。
+公開ページの名前が変わるので、`studio.html` の中の
+`window.PINK_PUBLIC` を `"index.html"` に書き換えます。
+
 外部の部品は使っていません。広告も、外部への通信もありません。
