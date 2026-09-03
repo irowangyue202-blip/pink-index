@@ -741,20 +741,49 @@ body[data-loading="true"] { overflow: hidden; }
 .kv__type {
   position: absolute;
   left: var(--hs-tx, 0%); top: var(--hs-ty, 100%);
-  transform: translate(calc(var(--hs-tx, 0%) * -1), calc(var(--hs-ty, 100%) * -1));
+  transform: translate(calc(var(--hs-tx, 0%) * -1), calc(var(--hs-ty, 100%) * -1))
+             rotate(var(--hs-trot, 0deg));
   width: max(16rem, var(--hs-tw, 62%));
   max-width: 100%; max-height: 100%;
   text-align: var(--hs-align, left);
   pointer-events: auto;
 }
+
+/* 縦書き。日本語の題名を縦に流したいときに使う */
+.kv__slide[data-tvert="on"] .kv__type {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  /* 縦書きでは「文字の幅」が、そのまま列の長さになる */
+  width: auto; height: max(6rem, var(--hs-tw, 62%)); max-height: 100%;
+}
+.kv__slide[data-tvert="on"] .kv__title { letter-spacing: var(--hs-tls, 0.02em); }
+
+/* 絵の上でも読めるようにする敷き */
+.kv__slide[data-tplate="veil"] .kv__type {
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  background: color-mix(in srgb, var(--hs-bg, #fff) 62%, transparent);
+  backdrop-filter: blur(6px);
+}
+.kv__slide[data-tplate="band"] .kv__type {
+  padding: clamp(0.75rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2rem);
+  background: var(--hs-bg, #fff);
+}
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .kv__slide[data-tplate="veil"] .kv__type { background: var(--hs-bg, #fff); }
+}
+
+/* ヘッダーの下まで文字を置けるようにする */
+.kv__slide[data-tfull="on"] .kv__free { inset: 0 var(--page-x) clamp(3rem, 6vw, 4.5rem); }
 .kv__eyebrow {
   font-family: var(--font-en); font-size: var(--t-xs);
   letter-spacing: var(--ls-label); text-transform: uppercase; margin: 0 0 var(--s-3);
 }
 .kv__title {
   font-family: var(--font-en); font-weight: var(--w-bold);
-  font-size: clamp(2rem, min(7vw, 12svh), 6rem); line-height: 0.95;
-  letter-spacing: -0.02em; margin: 0;
+  /* 大きさ・行間・字間は1枚ごとに決められる */
+  font-size: calc(clamp(2rem, min(7vw, 12svh), 6rem) * var(--hs-tsize, 1));
+  line-height: var(--hs-tlh, 0.95);
+  letter-spacing: var(--hs-tls, -0.02em);
+  margin: 0;
 }
 .kv__sub { font-size: var(--t-sm); margin: var(--s-3) 0 0; opacity: 0.85; }
 .kv__link {
@@ -869,8 +898,13 @@ body[data-reveal-ready] [data-reveal][data-shown] { opacity: 1; transform: none;
   align-items: end;
   gap: clamp(1.25rem, 3vw, 3.5rem);
 }
-/* 左端まで絵を伸ばし、右に余白を残す非対称 */
+/* 左端まで絵を伸ばし、右に余白を残す非対称。左右は入れ替えられる */
 .feature__stage { grid-column: 1; }
+.sec--feature[data-side="left"] .feature { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); }
+.sec--feature[data-side="left"] .feature__stage { grid-column: 2; }
+.sec--feature[data-side="left"] .feature__aside { grid-column: 1; padding: 0 0 clamp(0.5rem, 3vw, 2.5rem) var(--page-x); }
+.sec--feature[data-align="top"] .feature { align-items: start; }
+.sec--feature[data-align="center"] .feature { align-items: center; }
 .feature__lead img { max-height: 86svh; }
 .feature__aside { grid-column: 2; padding: 0 var(--page-x) clamp(0.5rem, 3vw, 2.5rem) 0; }
 .sec--feature .sec__head { padding-inline: var(--page-x); }
@@ -920,6 +954,10 @@ body[data-reveal-ready] [data-reveal][data-shown] { opacity: 1; transform: none;
   display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   align-items: center; gap: clamp(1.5rem, 4vw, 4rem);
 }
+/* 文字を左に置くときは、絵と文字を入れ替える */
+.sec--spotlight[data-side="left"] .spotlight { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.sec--spotlight[data-side="left"] .spotlight__stage { order: 2; }
+.sec--spotlight[data-side="left"] .spotlight__body { order: 1; padding-inline: var(--page-x) 0; }
 .spotlight__cover img { max-height: 82svh; }
 .spotlight__body { padding: clamp(1rem, 4vw, 3rem) var(--page-x) clamp(1rem, 4vw, 3rem) 0; }
 .spotlight__title {
@@ -1105,363 +1143,6 @@ body[data-reveal-ready] [data-reveal][data-shown] { opacity: 1; transform: none;
 .doc__section ul { margin: var(--s-4) 0 0; padding-left: 1.2em; }
 .doc__section li + li { margin-top: var(--s-3); }
 
-/* ============================================================
-   PINK INDEX — Studio (管理画面 / 企画書 7.7)
-   同じ色・書体・罫線を使うが、巨大文字や演出は最小限。
-   装飾より入力効率と誤操作防止を優先する。
-   ============================================================ */
-
-.studio { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100svh; }
-.studio__nav {
-  border-right: var(--line-hair); background: var(--c-white);
-  padding: var(--s-5) var(--s-4); position: sticky; top: 0; height: 100svh; overflow-y: auto;
-}
-.studio__nav h1 {
-  font-family: var(--font-en); font-size: var(--t-xs); letter-spacing: var(--ls-label);
-  text-transform: uppercase; color: var(--c-ink-muted); margin-bottom: var(--s-4);
-}
-.studio__nav a {
-  display: flex; align-items: center; gap: var(--s-2);
-  min-height: 38px; padding: 0 var(--s-3); border-radius: var(--r-2);
-  font-size: var(--t-sm); color: var(--c-ink-muted);
-}
-.studio__nav a:hover { background: var(--c-pink-mist); color: var(--c-ink); text-decoration: none; }
-.studio__nav a[aria-current="page"] { background: var(--c-ink); color: var(--c-white); }
-.studio__nav .group { margin-top: var(--s-5); }
-
-.studio__main { padding: var(--s-6) var(--s-6) var(--s-9); min-width: 0; }
-.studio__head { display: flex; align-items: baseline; gap: var(--s-4); flex-wrap: wrap; margin-bottom: var(--s-5); }
-.studio__head h2 { font-size: 1.5rem; }
-.studio__head .spacer { margin-left: auto; }
-
-.dash-grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-.dash-card {
-  border: var(--line-hair); border-radius: var(--r-2); background: var(--c-white);
-  padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-2);
-}
-.dash-card h3 {
-  font-family: var(--font-en); font-size: var(--t-xs);
-  letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--c-ink-muted);
-}
-.dash-card__value {
-  font-family: var(--font-num); font-size: 2.5rem; font-weight: var(--w-bold); line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.dash-card--muted { background: var(--c-pink-mist); }
-/* 公開アクセス数は隔離し、非表示にできる */
-.dash-card--isolated { border-style: dashed; }
-
-.wizard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); gap: var(--s-6); align-items: start; }
-.wizard__steps { display: flex; gap: var(--s-2); flex-wrap: wrap; margin-bottom: var(--s-5); }
-.wizard__step {
-  display: inline-flex; align-items: center; gap: var(--s-2);
-  font-size: var(--t-xs); color: var(--c-ink-muted);
-  border-bottom: 2px solid var(--c-hairline); padding-bottom: var(--s-2); flex: 1 1 80px;
-}
-.wizard__step[data-state="current"] { color: var(--c-ink); border-bottom-color: var(--c-ink); }
-.wizard__step[data-state="done"] { border-bottom-color: var(--c-accent); }
-.wizard__form { display: grid; gap: var(--s-5); }
-.form-row { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-
-.dropzone {
-  border: 1px dashed var(--c-ink-muted); border-radius: var(--r-3);
-  background: var(--c-pink-mist); padding: var(--s-7) var(--s-5); text-align: center;
-  cursor: pointer;
-}
-.dropzone:hover, .dropzone[data-over="true"] { background: var(--c-pale-pink); border-color: var(--c-ink); }
-
-/* アップロード直後の自動検査 */
-.checklist li {
-  display: grid; grid-template-columns: 1.2rem 1fr auto; gap: var(--s-3);
-  align-items: baseline; padding: var(--s-2) 0; border-bottom: var(--line-hair); font-size: var(--t-sm);
-}
-.checklist .state { font-size: var(--t-xs); letter-spacing: 0.06em; }
-.checklist [data-ok="true"] .mark { color: var(--c-ok); }
-.checklist [data-ok="false"] .mark { color: var(--c-danger); }
-.checklist [data-ok="pending"] .mark { color: var(--c-ink-muted); }
-
-.layer-list { border: var(--line-hair); border-radius: var(--r-2); overflow: hidden; background: var(--c-white); }
-.layer-list li {
-  display: grid; grid-template-columns: auto 1fr auto auto; gap: var(--s-3);
-  align-items: center; padding: var(--s-2) var(--s-3);
-  border-bottom: var(--line-hair); font-size: var(--t-xs);
-}
-.layer-list li:last-child { border-bottom: 0; }
-.layer-list li[draggable="true"] { cursor: grab; }
-.layer-list .order { font-family: var(--font-num); color: var(--c-ink-muted); }
-.layer-list .handle { color: var(--c-ink-muted); }
-
-.side-preview {
-  position: sticky; top: var(--s-5);
-  border: var(--line-hair); border-radius: var(--r-3); background: var(--c-white);
-  padding: var(--s-4); display: grid; gap: var(--s-3);
-}
-.side-preview .canvas { height: 46svh; width: 100%; justify-self: center; }
-
-.publish-bar {
-  display: flex; gap: var(--s-3); align-items: center; flex-wrap: wrap;
-  border-top: var(--line-ink); padding-top: var(--s-4); margin-top: var(--s-6);
-}
-.publish-bar .spacer { margin-left: auto; }
-.status-pill {
-  display: inline-flex; align-items: center; gap: var(--s-2);
-  font-size: var(--t-xs); letter-spacing: 0.06em;
-  border: var(--line-hair); border-radius: var(--r-pill); padding: var(--s-1) var(--s-3);
-}
-.status-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-ink-muted); }
-.status-pill[data-status="PUBLISHED"]::before { background: var(--c-ok); }
-.status-pill[data-status="DRAFT"]::before { background: var(--c-ink-muted); }
-.status-pill[data-status="REVIEW"]::before { background: var(--c-accent); }
-.status-pill[data-status="ARCHIVED"]::before { background: var(--c-hairline); }
-
-@media (max-width: 900px) {
-  .studio { grid-template-columns: 1fr; }
-  .studio__nav { position: static; height: auto; border-right: 0; border-bottom: var(--line-hair); }
-  .studio__nav { min-width: 0; }
-  .studio__nav ul {
-    display: flex; gap: var(--s-2); overflow-x: auto; scrollbar-width: none;
-    min-width: 0; max-width: 100%;
-  }
-  .studio__nav ul::-webkit-scrollbar { display: none; }
-  .studio__nav li { flex: 0 0 auto; }
-  .studio__nav .group { margin-top: var(--s-3); }
-  .wizard { grid-template-columns: 1fr; }
-  .studio__main { padding: var(--s-5) var(--s-4) var(--s-8); }
-}
-
-/* --- フレーバーテキスト欄（メモとは別項目） ------------------ */
-.flavor-fields {
-  border: var(--line-hair); border-radius: var(--r-2);
-  padding: var(--s-4) var(--s-5); display: grid; gap: var(--s-4);
-  background: var(--c-pink-mist);
-}
-.flavor-fields legend { font-size: var(--t-xs); letter-spacing: 0.06em; color: var(--c-ink-muted); padding: 0 var(--s-2); }
-.check { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-sm); }
-
-/* --- HOMEの編集 ------------------------------------------- */
-.home-editor { display: grid; gap: var(--s-3); margin-top: var(--s-5); }
-.home-slot { border: var(--line-hair); border-radius: var(--r-2); background: var(--c-white); }
-.home-slot[data-published="false"] { opacity: 0.62; }
-.home-slot__head {
-  display: grid; grid-template-columns: 2.5rem 64px minmax(0, 1fr) auto;
-  gap: var(--s-3); align-items: center; padding: var(--s-3) var(--s-4);
-}
-.home-slot__no { font-family: var(--font-num); color: var(--c-ink-muted); }
-.home-slot__thumb { width: 64px; height: 44px; object-fit: cover; background: var(--c-grey); }
-.home-slot__title { display: flex; gap: var(--s-2); align-items: baseline; flex-wrap: wrap; }
-.home-slot__title strong { font-size: 0.95rem; }
-.home-slot__actions { display: flex; gap: var(--s-2); flex-wrap: wrap; }
-.home-slot__body { border-top: var(--line-hair); padding: var(--s-4); display: grid; gap: var(--s-4); }
-.home-slot__body[hidden] { display: none; }
-.home-preview {
-  border: var(--line-hair); border-radius: var(--r-2); overflow: hidden;
-  max-height: 340px; background: var(--c-canvas);
-}
-.home-preview .hs { min-height: 0 !important; }
-.home-preview .hs--hero { min-height: 320px !important; }
-.home-preview .hs__title { font-size: 2rem !important; }
-.range-row { display: grid; grid-template-columns: max-content 1fr max-content; gap: var(--s-3); align-items: center; font-size: var(--t-xs); }
-.color-row { display: flex; gap: var(--s-4); flex-wrap: wrap; align-items: center; font-size: var(--t-xs); }
-.color-row input[type="color"] { width: 44px; height: 32px; border: var(--line-hair); border-radius: var(--r-1); background: none; }
-
-/* --- 素材の編集パネル -------------------------------------- */
-.item-edit { border-top: var(--line-hair); padding: var(--s-4); display: grid; gap: var(--s-4); background: var(--c-pink-mist); }
-.item-edit[hidden] { display: none; }
-.layer-list li.is-editing { display: block; padding: 0; }
-.layer-list li.is-editing .row { display: grid; grid-template-columns: auto 1fr auto auto; gap: var(--s-3); align-items: center; padding: var(--s-2) var(--s-3); }
-
-/* --- キービジュアル（横スクロール切り替え）の編集 ------------ */
-.home-slides { display: grid; gap: var(--s-3); }
-.home-slide { border: var(--line-hair); border-radius: var(--r-2); background: var(--c-canvas); }
-.home-slide .home-slot__head { grid-template-columns: 2rem 64px minmax(0, 1fr) auto; }
-.home-slide .home-slot__body { border-top: var(--line-hair); }
-
-/* 狭い画面では、見出しの行と操作の行を分けて重ならないようにする */
-@media (max-width: 720px) {
-  .home-slot__head,
-  .home-slide .home-slot__head {
-    grid-template-columns: 2rem 48px minmax(0, 1fr);
-    row-gap: var(--s-2);
-  }
-  .home-slot__thumb { width: 48px; height: 34px; }
-  .home-slot__actions { grid-column: 1 / -1; }
-}
-
-/* --- 文字を置く場所を決める操作 ------------------------------
-   9つのボタンで大まかに置き、つまみで細かく詰める。
-   触っている間はプレビューだけが動き、フォームは組み直さない。
-   ---------------------------------------------------------- */
-.place {
-  border: var(--line-hair); border-radius: var(--r-2);
-  padding: var(--s-4); margin: 0;
-  display: grid; grid-template-columns: max-content minmax(0, 1fr);
-  gap: var(--s-4) var(--s-5); align-items: start;
-}
-.place > legend {
-  font-size: var(--t-xs); letter-spacing: var(--ls-label);
-  color: var(--c-ink-muted); padding: 0 var(--s-2);
-}
-.place__grid {
-  display: grid; grid-template-columns: repeat(3, 34px); grid-auto-rows: 34px; gap: 3px;
-  border: var(--line-hair); border-radius: var(--r-1); padding: 3px;
-  background: var(--c-white);
-}
-.place__spot {
-  border: 0; border-radius: var(--r-1); cursor: pointer;
-  background: var(--c-pink-mist);
-  transition: background var(--m-micro) var(--ease-out);
-}
-.place__spot:hover { background: var(--c-pale-pink); }
-.place__spot[aria-pressed="true"] { background: var(--c-ink); }
-.place__ranges { display: grid; gap: var(--s-2); }
-.place .hint { grid-column: 1 / -1; margin: 0; }
-
-.seg {
-  justify-self: start; display: inline-flex; flex-wrap: wrap; max-width: 100%;
-  border: var(--line-hair); border-radius: var(--r-1); overflow: hidden;
-}
-.seg__btn {
-  border: 0; background: none; cursor: pointer;
-  padding: var(--s-2) var(--s-3); font-size: var(--t-xs); min-height: var(--tap-min);
-}
-.seg__btn + .seg__btn { border-left: var(--line-hair); }
-.seg__btn[aria-pressed="true"] { background: var(--c-ink); color: var(--c-white); }
-
-@media (max-width: 720px) {
-  .place { grid-template-columns: 1fr; }
-}
-
-/* --- 編集ステージ（画面を見ながら動かす） --------------------
-   公開ページと同じ1枚を出し、その上で直接つかんで動かす。
-   ------------------------------------------------------------ */
-.edit-stage {
-  border: var(--line-hair); border-radius: var(--r-2);
-  background: var(--c-white); overflow: hidden;
-}
-.edit-stage__bar {
-  display: flex; gap: var(--s-2); align-items: center; flex-wrap: wrap;
-  padding: var(--s-2) var(--s-3); border-bottom: var(--line-hair);
-  font-size: var(--t-xs);
-}
-.edit-stage__bar .spacer { margin-left: auto; }
-.edit-stage__read { color: var(--c-ink-muted); }
-.zoom { display: inline-flex; gap: var(--s-2); align-items: center; }
-
-.edit-stage__frame {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  max-height: 62svh;
-  overflow: hidden;
-  background: var(--c-canvas);
-  touch-action: none;              /* つかんで動かす操作をブラウザに取られない */
-}
-.edit-stage[data-view="sp"] .edit-stage__frame { aspect-ratio: 9 / 16; max-width: 360px; margin-inline: auto; }
-.edit-stage__frame .kv__slide { position: absolute; inset: 0; min-height: 0; }
-.edit-stage__frame .hs__title { font-size: clamp(1.25rem, 4.5cqw, 3rem); }
-.edit-stage__frame .hs__free { inset: var(--s-4); }
-
-/* つかめる場所であることを、枠と手の形で示す */
-.edit-stage .hs__type--hero {
-  outline: 1px dashed color-mix(in srgb, currentColor 45%, transparent);
-  outline-offset: 6px; cursor: grab;
-}
-.edit-stage .hs__type--hero:focus-visible { outline: 2px solid var(--c-focus); }
-.edit-stage[data-dragging="text"] .hs__type--hero { cursor: grabbing; }
-.edit-stage[data-mode="image"] .hs__type--hero { outline-color: transparent; cursor: default; pointer-events: none; }
-.edit-stage[data-mode="image"] .edit-stage__frame { cursor: grab; }
-.edit-stage[data-dragging="image"] .edit-stage__frame { cursor: grabbing; }
-.edit-stage[data-mode="image"] .edit-stage__handle { display: none; }
-
-.edit-stage__handle {
-  position: absolute; right: -10px; bottom: -10px;
-  width: 20px; height: 20px; border-radius: 50%;
-  background: var(--c-ink); border: 2px solid var(--c-white);
-  cursor: ew-resize;
-}
-
-/* ステージの中のリンクは、編集中は押させない */
-.edit-stage a { pointer-events: none; }
-
-.fine > summary {
-  cursor: pointer; font-size: var(--t-xs); color: var(--c-ink-muted);
-  padding: var(--s-2) 0; letter-spacing: var(--ls-label);
-}
-.fine[open] > summary { margin-bottom: var(--s-3); }
-
-/* --- サイトの文字（画面を見ながら直す） ---------------------- */
-.texts {
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
-  gap: var(--s-4); align-items: start;
-}
-.texts__view { position: sticky; top: var(--s-4); display: grid; gap: var(--s-3); }
-.texts__frame {
-  width: 100%; height: min(70svh, 720px);
-  border: var(--line-hair); border-radius: var(--r-2); background: var(--c-white);
-}
-.texts__list { display: grid; gap: var(--s-3); max-height: 78svh; overflow-y: auto; padding-right: var(--s-2); }
-
-.text-row {
-  border: var(--line-hair); border-radius: var(--r-2);
-  padding: var(--s-2) var(--s-3) var(--s-3); background: var(--c-white);
-  display: grid; gap: var(--s-2);
-}
-.text-row.is-off { opacity: 0.55; }
-.text-row.is-edited { border-color: var(--c-ink); }
-.text-row__head { display: flex; gap: var(--s-1); align-items: center; flex-wrap: wrap; font-size: var(--t-xs); }
-.text-row__head .spacer { margin-left: auto; }
-.text-row .textarea { min-height: 0; font-size: var(--t-sm); padding: var(--s-2); }
-.seg--tight .seg__btn { padding: var(--s-1) var(--s-2); min-height: 28px; }
-.text-row .btn--sm { padding: var(--s-1) var(--s-2); min-height: 28px; }
-
-@media (max-width: 900px) {
-  .texts { grid-template-columns: 1fr; }
-  .texts__view { position: static; }
-  .texts__list { max-height: none; }
-}
-
-/* 管理サイドバーの補足（公開側では使わない） */
-.footer-note {
-  padding-top: var(--s-4); border-top: var(--line-hair);
-  font-size: var(--t-xs); color: var(--c-ink-muted); line-height: 1.9;
-}
-
-/* --- タグ・色の入力（押して外せるチップ） --------------------- */
-.chips-input {
-  border: var(--line-hair); border-radius: var(--r-2); padding: var(--s-2);
-  display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; background: var(--c-white);
-}
-.chips-input__list { display: contents; }
-.chips-input .input { border: 0; flex: 1 1 8rem; min-width: 8rem; padding: var(--s-1) var(--s-2); }
-.chip-token {
-  display: inline-flex; align-items: center; gap: var(--s-2);
-  border: var(--line-hair); border-radius: 999px; background: var(--c-pink-mist);
-  padding: var(--s-1) var(--s-3); font-size: var(--t-xs); cursor: pointer; min-height: 30px;
-}
-.chip-token:hover { border-color: var(--c-ink); }
-
-/* --- 公開状態 ------------------------------------------------- */
-.vis-fields {
-  border: var(--line-hair); border-radius: var(--r-2);
-  padding: var(--s-4); margin: 0; display: grid; gap: var(--s-2);
-}
-.vis-fields > legend { font-size: var(--t-xs); letter-spacing: var(--ls-label); color: var(--c-ink-muted); padding: 0 var(--s-2); }
-
-/* 公開状態の印。PRIVATE は控えめ、公開しているものは黒で示す */
-.vis-pill {
-  display: inline-block; font-family: var(--font-en); font-size: 10px;
-  letter-spacing: var(--ls-label); padding: 2px var(--s-2);
-  border: 1px solid var(--c-hairline); border-radius: 999px; color: var(--c-ink-muted);
-}
-.vis-pill:not([data-vis="PRIVATE"]) { border-color: var(--c-ink); color: var(--c-ink); }
-
-/* --- 最下部のロゴの差し替え --------------------------------- */
-.logo-field { display: grid; gap: var(--s-3); max-width: 46rem; }
-.logo-field__preview {
-  border: var(--line-hair); border-radius: var(--r-2); background: var(--c-white);
-  padding: var(--s-4); display: grid; place-items: center; min-height: 96px;
-}
-.logo-field__preview img { max-width: 100%; height: auto; }
-
 /* 1ファイル版だけの調整 */
 body[data-chrome="off"] > .site-header,
 body[data-chrome="off"] > .site-footer { display: none; }
@@ -1493,7 +1174,7 @@ body[data-chrome="off"] > .site-footer { display: none; }
   </footer>
 <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
 
-<script id="routes" type="application/json">{"/":{"title":"PINK INDEX","chrome":true,"bodyClass":"has-hero","pre":"<div class=\"loader\" id=\"loader\" data-state=\"load\" role=\"dialog\" aria-modal=\"true\" aria-label=\"読み込み中\">\n  <div class=\"loader__top\">\n    <span>PINK INDEX</span>\n    <span>ILLUSTRATION ARCHIVE</span>\n  </div>\n  <p class=\"loader__count\" aria-hidden=\"true\">\n    <span class=\"loader__range\">01—100</span>\n    <span class=\"loader__digits loader__digits--l\" id=\"loader-d1\">0</span><span\n          class=\"loader__digits loader__digits--r\" id=\"loader-d2\">0</span>\n    <span class=\"loader__pct\">%</span>\n  </p>\n  <p class=\"visually-hidden\" id=\"loader-status\" aria-live=\"polite\">サイトを読み込んでいます 0%</p>\n</div>\n<div class=\"perimeter\" id=\"perimeter\" aria-hidden=\"true\">\n  <svg preserveAspectRatio=\"none\" id=\"perimeter-svg\">\n    <rect class=\"perimeter__track\" id=\"perimeter-track\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <rect class=\"perimeter__line\" id=\"perimeter-line\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <circle class=\"perimeter__tip\" id=\"perimeter-tip\" r=\"3.5\" cx=\"0\" cy=\"0\"></circle>\n  </svg>\n</div>\n<div class=\"home-frame\" id=\"home-frame\"></div>","main":"\n<div id=\"home-slots\">\n\n  <section class=\"kv\" data-kv>\n    <div class=\"kv__track\" id=\"kv-track\" tabindex=\"0\"\n         role=\"group\" aria-roledescription=\"カルーセル\" aria-label=\"キービジュアル\">\n      \n        <article class=\"kv__slide\" style=\"--hs-bg:#FFF9FC;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left\" data-tone=\"dark\" data-kv-slide=\"0\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"1 / 1\">\n          \n          <div class=\"kv__free\">\n          <div class=\"kv__type\">\n            \n            <h1 class=\"kv__title\">PINK INDEX</h1>\n            \n            <a class=\"kv__link\" href=\"#/works/\">VIEW WORKS</a>\n          </div></div>\n        </article>\n    </div>\n    \n  </section>\n\n  <section class=\"sec sec--feature\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">FEATURE</h2>\n      \n    </div>\n    <div class=\"feature\">\n      <div class=\"feature__stage\">\n        <span class=\"feature__lead feature__lead--empty\"><span class=\"ph\" style=\"aspect-ratio:5 / 4\"></span></span>\n      </div>\n      <div class=\"feature__aside\">\n        \n        \n        \n        <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW WORKS</a></p>\n      </div>\n    </div>\n  </section>\n\n  <section class=\"sec sec--details\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">DETAILS</h2>\n      \n    </div>\n    <div class=\"strip\" role=\"list\"><div class=\"strip__cell strip__cell--narrow\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:3 / 4\"></span></span>\n      </div><div class=\"strip__cell strip__cell--wide\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 9\"></span></span>\n      </div><div class=\"strip__cell strip__cell--square\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:1 / 1\"></span></span>\n      </div><div class=\"strip__cell strip__cell--narrow\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:9 / 16\"></span></span>\n      </div><div class=\"strip__cell strip__cell--wide\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:2 / 1\"></span></span>\n      </div><div class=\"strip__cell strip__cell--square\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:4 / 5\"></span></span>\n      </div></div>\n  </section>\n\n  <section class=\"sec sec--picks\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">SELECTED</h2>\n      \n    </div>\n    <div class=\"picks\"><div class=\"picks__item picks__item--tall\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:3 / 4\"></span></span>\n      </div><div class=\"picks__item picks__item--wide\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 9\"></span></span>\n      </div><div class=\"picks__item picks__item--wide2\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 10\"></span></span>\n      </div><div class=\"picks__item picks__item--square\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:1 / 1\"></span></span>\n      </div></div>\n    <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW ALL</a></p>\n  </section>\n\n  <section class=\"sec sec--spotlight\" style=\"--hs-bg:#171417;--hs-fg:#FFFFFF;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left\" data-reveal>\n    <div class=\"spotlight\">\n      <div class=\"spotlight__stage\">\n        <span class=\"spotlight__cover spotlight__cover--empty\"><span class=\"ph\" style=\"aspect-ratio:4 / 3\"></span></span>\n      </div>\n      <div class=\"spotlight__body\">\n        <p class=\"sec__eyebrow\">SPOTLIGHT</p>\n        \n        \n        <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW MORE</a></p>\n      </div>\n    </div>\n  </section>\n</div>\n"},"/works/":{"title":"WORKS — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">WORKS</h1>\n    </div>\n    \n  </div>\n<div class=\"page\">\n  <div class=\"filters\" role=\"search\" data-works-filter hidden>\n    <div class=\"filters__row\">\n      <label class=\"visually-hidden\" for=\"works-search\">作品を検索</label>\n      <input class=\"input filters__search\" id=\"works-search\" type=\"search\" placeholder=\"SEARCH\">\n      <span class=\"spacer\"></span>\n      <span class=\"filters__count\"><span class=\"num\" id=\"works-count\">0</span> WORKS</span>\n    </div>\n    <div class=\"filters__row\" id=\"works-cats\"></div>\n    <div class=\"filters__row filters__row--tags\" id=\"works-tags\"></div>\n  </div>\n\n  <div class=\"work-grid\" id=\"works-grid\"></div>\n  <p class=\"coming\" id=\"works-empty\">COMING SOON</p>\n</div>\n"},"/work/":{"title":"WORK — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n<div id=\"work-detail\" data-work-detail>\n  <h1 class=\"visually-hidden\">WORK</h1>\n  <p class=\"coming\">COMING SOON</p>\n</div>\n"},"/series/":{"title":"SERIES — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n<div id=\"series-view\" data-series-view>\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">SERIES</h1>\n    </div>\n    \n  </div>\n<div class=\"page section\"><p class=\"coming\">COMING SOON</p></div>\n</div>\n"}}</script>
+<script id="routes" type="application/json">{"/":{"title":"PINK INDEX","chrome":true,"bodyClass":"has-hero","pre":"<div class=\"loader\" id=\"loader\" data-state=\"load\" role=\"dialog\" aria-modal=\"true\" aria-label=\"読み込み中\">\n  <div class=\"loader__top\">\n    <span>PINK INDEX</span>\n    <span>ILLUSTRATION ARCHIVE</span>\n  </div>\n  <p class=\"loader__count\" aria-hidden=\"true\">\n    <span class=\"loader__range\">01—100</span>\n    <span class=\"loader__digits loader__digits--l\" id=\"loader-d1\">0</span><span\n          class=\"loader__digits loader__digits--r\" id=\"loader-d2\">0</span>\n    <span class=\"loader__pct\">%</span>\n  </p>\n  <p class=\"visually-hidden\" id=\"loader-status\" aria-live=\"polite\">サイトを読み込んでいます 0%</p>\n</div>\n<div class=\"perimeter\" id=\"perimeter\" aria-hidden=\"true\">\n  <svg preserveAspectRatio=\"none\" id=\"perimeter-svg\">\n    <rect class=\"perimeter__track\" id=\"perimeter-track\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <rect class=\"perimeter__line\" id=\"perimeter-line\" x=\"0.5\" y=\"0.5\" rx=\"0\"></rect>\n    <circle class=\"perimeter__tip\" id=\"perimeter-tip\" r=\"3.5\" cx=\"0\" cy=\"0\"></circle>\n  </svg>\n</div>\n<div class=\"home-frame\" id=\"home-frame\"></div>","main":"\n<div id=\"home-slots\">\n\n  <section class=\"kv\" data-kv>\n    <div class=\"kv__track\" id=\"kv-track\" tabindex=\"0\"\n         role=\"group\" aria-roledescription=\"カルーセル\" aria-label=\"キービジュアル\">\n      \n        <article class=\"kv__slide\" style=\"--hs-bg:#FFF9FC;--hs-fg:#171417;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-tsize:1;--hs-tls:-0.02em;--hs-tlh:0.95;--hs-trot:0deg\" data-tone=\"dark\" data-tplate=\"none\" data-kv-slide=\"0\" role=\"group\" aria-roledescription=\"スライド\" aria-label=\"1 / 1\">\n          \n          <div class=\"kv__free\">\n          <div class=\"kv__type\">\n            \n            <h1 class=\"kv__title\">PINK INDEX</h1>\n            \n            <a class=\"kv__link\" href=\"#/works/\">VIEW WORKS</a>\n          </div></div>\n        </article>\n    </div>\n    \n  </section>\n\n  <section class=\"sec sec--feature\" data-side=\"right\"\n           data-align=\"bottom\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">FEATURE</h2>\n      \n    </div>\n    <div class=\"feature\">\n      <div class=\"feature__stage\">\n        <span class=\"feature__lead feature__lead--empty\"><span class=\"ph\" style=\"aspect-ratio:5 / 4\"></span></span>\n      </div>\n      <div class=\"feature__aside\">\n        \n        \n        \n        <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW WORKS</a></p>\n      </div>\n    </div>\n  </section>\n\n  <section class=\"sec sec--details\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">DETAILS</h2>\n      \n    </div>\n    <div class=\"strip\" role=\"list\"><div class=\"strip__cell strip__cell--narrow\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:3 / 4\"></span></span>\n      </div><div class=\"strip__cell strip__cell--wide\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 9\"></span></span>\n      </div><div class=\"strip__cell strip__cell--square\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:1 / 1\"></span></span>\n      </div><div class=\"strip__cell strip__cell--narrow\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:9 / 16\"></span></span>\n      </div><div class=\"strip__cell strip__cell--wide\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:2 / 1\"></span></span>\n      </div><div class=\"strip__cell strip__cell--square\" role=\"listitem\">\n        <span class=\"strip__shot strip__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:4 / 5\"></span></span>\n      </div></div>\n  </section>\n\n  <section class=\"sec sec--picks\" data-reveal>\n    <div class=\"sec__head\">\n      <h2 class=\"sec__title\">SELECTED</h2>\n      \n    </div>\n    <div class=\"picks\"><div class=\"picks__item picks__item--tall\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:3 / 4\"></span></span>\n      </div><div class=\"picks__item picks__item--wide\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 9\"></span></span>\n      </div><div class=\"picks__item picks__item--wide2\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:16 / 10\"></span></span>\n      </div><div class=\"picks__item picks__item--square\">\n        <span class=\"picks__shot picks__shot--empty\"><span class=\"ph\" style=\"aspect-ratio:1 / 1\"></span></span>\n      </div></div>\n    <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW ALL</a></p>\n  </section>\n\n  <section class=\"sec sec--spotlight\" style=\"--hs-bg:#171417;--hs-fg:#FFFFFF;--hs-focus:50% 40%;--hs-zoom:1;--hs-tx:0%;--hs-ty:100%;--hs-tw:62%;--hs-align:left;--hs-tsize:1;--hs-tls:-0.02em;--hs-tlh:0.95;--hs-trot:0deg\"\n           data-side=\"right\" data-reveal>\n    <div class=\"spotlight\">\n      <div class=\"spotlight__stage\">\n        <span class=\"spotlight__cover spotlight__cover--empty\"><span class=\"ph\" style=\"aspect-ratio:4 / 3\"></span></span>\n      </div>\n      <div class=\"spotlight__body\">\n        <p class=\"sec__eyebrow\">SPOTLIGHT</p>\n        \n        \n        <p class=\"sec__more\"><a class=\"link-arrow\" href=\"#/works/\">VIEW MORE</a></p>\n      </div>\n    </div>\n  </section>\n</div>\n"},"/works/":{"title":"WORKS — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">WORKS</h1>\n    </div>\n    \n  </div>\n<div class=\"page\">\n  <div class=\"filters\" role=\"search\" data-works-filter hidden>\n    <div class=\"filters__row\">\n      <label class=\"visually-hidden\" for=\"works-search\">作品を検索</label>\n      <input class=\"input filters__search\" id=\"works-search\" type=\"search\" placeholder=\"SEARCH\">\n      <span class=\"spacer\"></span>\n      <span class=\"filters__count\"><span class=\"num\" id=\"works-count\">0</span> WORKS</span>\n    </div>\n    <div class=\"filters__row\" id=\"works-cats\"></div>\n    <div class=\"filters__row filters__row--tags\" id=\"works-tags\"></div>\n  </div>\n\n  <div class=\"work-grid\" id=\"works-grid\"></div>\n  <p class=\"coming\" id=\"works-empty\">COMING SOON</p>\n</div>\n"},"/work/":{"title":"WORK — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n<div id=\"work-detail\" data-work-detail>\n  <h1 class=\"visually-hidden\">WORK</h1>\n  <p class=\"coming\">COMING SOON</p>\n</div>\n"},"/series/":{"title":"SERIES — PINK INDEX","chrome":true,"bodyClass":"","pre":"","main":"\n<div id=\"series-view\" data-series-view>\n\n  <div class=\"page page-head\">\n    <div class=\"page-head__title\">\n      <h1 class=\"page-head__en\">SERIES</h1>\n    </div>\n    \n  </div>\n<div class=\"page section\"><p class=\"coming\">COMING SOON</p></div>\n</div>\n"}}</script>
 <script id="assets" type="application/json">{}</script>
 <script>
 /* --- ルーター ---------------------------------------------
@@ -1501,6 +1182,8 @@ body[data-chrome="off"] > .site-footer { display: none; }
    ちょうど1回だけ走らせるため（listener の二重登録を避ける）。
    --------------------------------------------------------- */
 window.PINK_SINGLE = true;
+/* 同梱の公開データ。管理画面が書き出すときは、ここだけを差し替える */
+window.PINK_SEED = null;
 window.PINK_ASSETS = JSON.parse(document.getElementById("assets").textContent);
 (function () {
   var ROUTES = JSON.parse(document.getElementById("routes").textContent);
@@ -2075,13 +1758,23 @@ const esc = (s) => String(s ?? "")
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
+/** 0〜100% の値。0.1刻みまで受ける（つかんで動かしたときの細かさ） */
 const pct = (v, fallback) => {
   const n = Number(v);
-  return Number.isFinite(n) ? Math.min(100, Math.max(0, Math.round(n))) : fallback;
+  return Number.isFinite(n) ? Math.min(100, Math.max(0, Math.round(n * 10) / 10)) : fallback;
+};
+/** 範囲を決めた数値。文字の大きさ・字間・行間・傾きに使う */
+const num = (v, min, max, fallback) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n * 100) / 100)) : fallback;
 };
 const ALIGN = ["left", "center", "right"];
+const PLATE = ["none", "veil", "band"];
 
-/** 1枠ぶんの見た目をCSS変数で渡す。文字の置き場所も含む */
+/**
+ * 1枠ぶんの見た目をCSS変数で渡す。
+ * 文字は「置き場所」だけでなく、大きさ・字間・行間・傾き・縦横も選べる。
+ */
 const style = (o) => [
   `--hs-bg:${/^#[0-9a-fA-F]{3,8}$/.test(o.bg || "") ? o.bg : "#FFF9FC"}`,
   `--hs-fg:${/^#[0-9a-fA-F]{3,8}$/.test(o.fg || "") ? o.fg : "#171417"}`,
@@ -2091,7 +1784,18 @@ const style = (o) => [
   `--hs-ty:${pct(o.ty, 100)}%`,
   `--hs-tw:${pct(o.tw, 62)}%`,
   `--hs-align:${ALIGN.includes(o.align) ? o.align : "left"}`,
+  `--hs-tsize:${num(o.tsize, 40, 260, 100) / 100}`,
+  `--hs-tls:${num(o.tls, -8, 40, -2) / 100}em`,
+  `--hs-tlh:${num(o.tlh, 70, 240, 95) / 100}`,
+  `--hs-trot:${num(o.trot, -20, 20, 0)}deg`,
 ].join(";");
+
+/** 文字まわりの見せ方。縦書き・敷き・ヘッダーの下まで使うか */
+const textMods = (o) => [
+  o.tvert ? ' data-tvert="on"' : "",
+  ` data-tplate="${PLATE.includes(o.tplate) ? o.tplate : "none"}"`,
+  o.tfull ? ' data-tfull="on"' : "",
+].join("");
 
 const img = (src, alt, cls, { eager = false, sizes = "" } = {}) => (src
   ? `<img class="${cls}" src="${esc(src)}" alt="${esc(alt ?? "")}"
@@ -2132,7 +1836,7 @@ function slideHTML(s, { url = (p) => p, heading = "h2", eager = false, attrs = "
             ${link}
           </div>`;
   return `
-        <article class="kv__slide" style="${style(s)}" data-tone="${s.tone === "light" ? "light" : "dark"}"${attrs}>
+        <article class="kv__slide" style="${style(s)}" data-tone="${s.tone === "light" ? "light" : "dark"}"${textMods(s)}${attrs}>
           ${s.media ? `<picture class="kv__media">
             ${s.mediaMobile ? `<source media="(max-width: 820px)" srcset="${esc(url(s.mediaMobile))}">` : ""}
             ${img(url(s.media), s.altText ?? s.title ?? "", "kv__img", { eager })}
@@ -2212,6 +1916,15 @@ const CROPS = [
   { ratio: "4 / 5", pos: "72% 34%", span: "square" },   // 右寄りの部分
 ];
 
+/** 区画で選べる比率。管理画面の選択肢と同じ並び */
+const RATIOS = {
+  wide: "16 / 9", cinema: "2 / 1", box: "5 / 4", square: "1 / 1", tall: "4 / 5", portrait: "3 / 4",
+};
+
+/** 区画ごとの「絵のどこを見せるか」。未設定なら区画の既定 */
+const focusOf = (o, fallback) =>
+  (/^[\d.]+% [\d.]+%$/.test(o.focus || "") ? o.focus : fallback);
+
 /**
  * 1枡。画像があればリンク付きの絵、無ければ色面だけを置く。
  * 色面は装飾で、作品の代わりではない（外の画像を持ち込まないため）。
@@ -2243,18 +1956,22 @@ const dotted = (w) => String(w?.createdOn ?? "").replace(/-/g, ".");
  * 文字は絵の外、右下に寄せる（中央に小さくまとめない）。
  */
 function featureHTML(slot, { url, works, pool }) {
-  const lead = works.featured[0] ?? works.all[0] ?? null;
+  // 見せる1点は管理画面で選べる。選んでいなければ「おすすめ」→最初の作品
+  const picked = slot.workId ? works.all.find((w) => w.id === slot.workId) : null;
+  const lead = picked ?? works.featured[0] ?? works.all[0] ?? null;
   const shot = lead
     ? { src: lead.mainImage, alt: lead.altText ?? lead.title, href: workHref(lead, url), work: lead }
     : pick(pool, 0);
   const note = (lead?.description ?? "").trim().split(/\n|。/)[0].slice(0, 60);
+  const ratio = RATIOS[slot.ratio] ?? "5 / 4";
 
   return `
-  <section class="sec sec--feature" data-reveal>
+  <section class="sec sec--feature" data-side="${slot.side === "left" ? "left" : "right"}"
+           data-align="${slot.valign === "top" ? "top" : slot.valign === "center" ? "center" : "bottom"}" data-reveal>
     ${head(slot)}
     <div class="feature">
       <div class="feature__stage">
-        ${cell(shot, { ratio: "5 / 4", pos: "50% 38%", cls: "feature__lead", eager: true })}
+        ${cell(shot, { ratio, pos: focusOf(slot, "50% 38%"), cls: "feature__lead", eager: true })}
       </div>
       <div class="feature__aside">
         ${lead ? `<p class="feature__name">${esc(lead.title)}</p>` : ""}
@@ -2273,10 +1990,18 @@ function featureHTML(slot, { url, works, pool }) {
  * 作品の一部だけを大胆に切り取って横へ並べる帯。
  * 比率も切り取る場所も枡ごとに変える。完成画像の縮小版は並べない。
  */
-function detailsHTML(slot, { url, pool }) {
+function detailsHTML(slot, { url, works, pool }) {
+  // 元にする絵は、タグで絞れる。枡の数も選べる（4・6・8）
+  const tagged = slot.tag ? works.all.filter((w) => (w.tags ?? []).includes(slot.tag)) : [];
+  const from = tagged.length
+    ? tagged.map((w) => ({ src: w.mainImage, alt: w.altText ?? w.title, href: workHref(w, url), work: w }))
+    : pool;
+  const count = [4, 6, 8].includes(Number(slot.count)) ? Number(slot.count) : 6;
+
   // 在庫がある分だけ順に使う。1枚しか無いときは切り取る場所で差をつける
-  const cells = CROPS.map((c, i) => {
-    const entry = pick(pool, i);
+  const cells = Array.from({ length: count }, (_, i) => {
+    const c = CROPS[i % CROPS.length];
+    const entry = pick(from, i);
     return `<div class="strip__cell strip__cell--${c.span}" role="listitem">
         ${cell(entry, { ratio: c.ratio, pos: c.pos, cls: "strip__shot" })}
       </div>`;
@@ -2328,9 +2053,15 @@ function selectedHTML(slot, { url, works, pool }) {
   const sorted = [...works.all]
     .sort((a, b) => String(b.createdOn ?? "").localeCompare(String(a.createdOn ?? "")));
   const recent = works.all.length > 4 ? sorted.filter((w) => w.id !== lead?.id) : sorted;
+  // 4枠それぞれ、管理画面で作品を指名できる（空なら新しい順に埋める）
+  const picks = Array.isArray(slot.pickIds) ? slot.pickIds : [];
+  const named = new Set(picks.filter(Boolean));
+  const rest = recent.filter((x) => !named.has(x.id));
+  let n = 0;
 
   const items = SELECTED_SHAPES.map((shape, i) => {
-    const w = recent[i];
+    const chosen = picks[i] ? works.all.find((x) => x.id === picks[i]) : null;
+    const w = chosen ?? rest[n++] ?? null;
     const entry = w
       ? { src: w.mainImage, alt: w.altText ?? w.title, href: workHref(w, url), work: w }
       : pick(pool, i + 1);
@@ -2354,12 +2085,15 @@ function selectedHTML(slot, { url, works, pool }) {
  * ここまでの白い流れに対する視覚的な切り替え。
  */
 function spotlightHTML(slot, { url, works, series, pool }) {
-  const target = slot.seriesSlug
+  // 作品を指名していればそれを、していなければシリーズを、どちらも無ければ自動
+  const named = slot.workId ? works.all.find((w) => w.id === slot.workId) : null;
+  const target = named ? null : slot.seriesSlug
     ? series.find((s) => s.slug === slot.seriesSlug)
     : series.find((s) => works.all.some((w) => w.series === s.slug));
   const list = target ? works.all.filter((w) => w.series === target.slug) : [];
 
-  const solo = !target ? (works.featured[1] ?? works.featured[0] ?? works.all[works.all.length - 1] ?? null) : null;
+  const solo = named
+    ?? (!target ? (works.featured[1] ?? works.featured[0] ?? works.all[works.all.length - 1] ?? null) : null);
   const shot = list[0]
     ? { src: list[0].mainImage, alt: list[0].altText ?? list[0].title, href: seriesHref(target, url) }
     : solo
@@ -2371,10 +2105,11 @@ function spotlightHTML(slot, { url, works, series, pool }) {
   const href = target ? seriesHref(target, url) : solo ? workHref(solo, url) : url(slot.href || "/works/");
 
   return `
-  <section class="sec sec--spotlight" style="${style(slot)}" data-reveal>
+  <section class="sec sec--spotlight" style="${style(slot)}"
+           data-side="${slot.side === "left" ? "left" : "right"}" data-reveal>
     <div class="spotlight">
       <div class="spotlight__stage">
-        ${cell(shot, { ratio: "4 / 3", pos: "50% 34%", cls: "spotlight__cover" })}
+        ${cell(shot, { ratio: RATIOS[slot.ratio] ?? "4 / 3", pos: focusOf(slot, "50% 34%"), cls: "spotlight__cover" })}
       </div>
       <div class="spotlight__body">
         <p class="sec__eyebrow">${esc(slot.title || "SPOTLIGHT")}</p>
@@ -3155,1112 +2890,6 @@ if (loader) {
           }).join("")}
         </div>
       </div>` : `<div class="page section"><p class="coming">COMING SOON</p></div>`);
-  }
-})();
-
-/**
- * STUDIO（管理画面）の振る舞い。
- *
- * 一覧はここで組み立てる（この端末に登録した作品を読むため）。
- * 公開画面からはリンクしない。ラベルは短く、説明は詳細設定の中へ。
- */
-(() => {
-  const { store, home, url } = window.PINK;
-  const toast = (m) => window.pinkToast?.(m);
-  const el = (id) => document.getElementById(id);
-  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const d = (s) => String(s ?? "").replace(/-/g, ".");
-
-  /**
-   * 取り消しの確認。ダイアログを出せない環境でも動くよう、
-   * ボタン自身を2度押しに切り替える。
-   */
-  const confirmTwice = (btn, label) => {
-    if (btn.dataset.armed === "1") return true;
-    const original = btn.textContent;
-    btn.dataset.armed = "1";
-    btn.textContent = label;
-    btn.classList.add("btn--danger");
-    setTimeout(() => {
-      if (!btn.isConnected) return;
-      btn.dataset.armed = "";
-      btn.textContent = original;
-      btn.classList.remove("btn--danger");
-    }, 4000);
-    return false;
-  };
-
-  /** 画像を読み込んで data URL にする */
-  const readImage = (file) => new Promise((res) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.onerror = () => res(null);
-    r.readAsDataURL(file);
-  });
-
-  /** 長辺 1600px までに縮めて保存する（原寸は手元に置いたまま） */
-  const fitImage = (file) => new Promise((res) => {
-    if (/svg/.test(file.type)) { readImage(file).then(res); return; }
-    const reader = new FileReader();
-    reader.onerror = () => res(null);
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => res(null);
-      img.onload = () => {
-        const MAX = 1600;
-        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
-        const c = document.createElement("canvas");
-        c.width = Math.round(img.width * scale);
-        c.height = Math.round(img.height * scale);
-        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-        res({ media: c.toDataURL("image/jpeg", 0.86), w: img.width, h: img.height });
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  const VIS = ["DRAFT", "PRIVATE", "PUBLIC"];
-
-  /* ============ ダッシュボード ============ */
-  if (el("dash-counts")) {
-    const paint = () => {
-      const s = store.stats();
-      el("dash-counts").innerHTML = [
-        ["作品", s.works], ["公開中", s.published], ["編集中", s.drafts],
-        ["保管", s.private], ["シリーズ", s.series],
-      ].map(([label, value]) => `
-        <div class="dash-card">
-          <p class="index-label">${esc(label)}</p>
-          <p class="num" style="font-size:var(--t-title)">${value}</p>
-        </div>`).join("");
-
-      const recent = [...store.mergedWorks()]
-        .sort((a, b) => String(b.createdOn ?? "").localeCompare(String(a.createdOn ?? ""))).slice(0, 6);
-      el("dash-recent").innerHTML = recent.length ? recent.map((w) => `
-        <li>
-          <img src="${esc(w.mainImage)}" alt="" width="34" height="34" style="object-fit:cover">
-          <span><strong>${esc(w.title)}</strong><br>
-            <span style="color:var(--c-ink-muted)">${esc(d(w.createdOn))}</span></span>
-          <span class="vis-pill" data-vis="${esc(w.visibility)}">${esc(w.visibility)}</span>
-        </li>`).join("") : `<li><span class="hint">まだ作品がありません</span></li>`;
-      el("dash-bytes").textContent = `${Math.round(s.bytes / 1024)} KB`;
-    };
-
-    el("dash-export").addEventListener("click", () => {
-      const blob = new Blob([store.exportData()], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "site-data.json";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-      toast("site-data.json を書き出しました");
-    });
-    el("dash-import").addEventListener("click", () => el("dash-import-file").click());
-    el("dash-import-file").addEventListener("change", async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const r = store.importData(await file.text());
-      toast(r.ok ? "読み込みました" : r.reason);
-      paint();
-    });
-    el("dash-reset").addEventListener("click", (e) => {
-      if (!confirmTwice(e.currentTarget, "すべて取り消す（もう一度押す）")) return;
-      store.resetAll();
-      toast("編集をすべて取り消しました");
-      paint();
-    });
-    paint();
-  }
-
-  /* ============ 作品を追加 ============ */
-  if (el("entry-form")) {
-    let picked = null;
-    const chips = { tags: [] };
-
-    const fillSelects = () => {
-      el("e-cat").innerHTML = store.mergedCategories()
-        .map((c) => `<option value="${esc(c.key)}">${esc(c.name)}</option>`).join("");
-      el("e-series").innerHTML = `<option value="">（なし）</option>` + store.mergedSeries()
-        .map((s) => `<option value="${esc(s.slug)}">${esc(s.name)}</option>`).join("");
-    };
-    fillSelects();
-    el("e-date").value = new Date().toISOString().slice(0, 10);
-
-    /* --- タグ（押して外せるチップ） --- */
-    const drawChips = () => {
-      const box = el("tags-input");
-      box.querySelector(".chips-input__list").innerHTML = chips.tags.map((t) => `
-        <button class="chip-token" type="button" data-drop-chip="${esc(t)}">${esc(t)}<span aria-hidden="true">×</span>
-          <span class="visually-hidden">を外す</span></button>`).join("");
-      const all = [...new Set(store.mergedWorks().flatMap((w) => w.tags ?? []))].sort();
-      box.querySelector("datalist").innerHTML = all.filter((t) => !chips.tags.includes(t))
-        .map((t) => `<option value="${esc(t)}">`).join("");
-    };
-    const addChip = (v) => {
-      const t = String(v ?? "").trim();
-      if (!t || chips.tags.includes(t)) return;
-      chips.tags.push(t);
-      drawChips();
-    };
-    const tagInput = el("e-tags");
-    tagInput.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter" && e.key !== "," && e.key !== " ") return;
-      e.preventDefault(); addChip(tagInput.value); tagInput.value = "";
-    });
-    tagInput.addEventListener("change", () => { addChip(tagInput.value); tagInput.value = ""; });
-    tagInput.addEventListener("blur", () => { addChip(tagInput.value); tagInput.value = ""; });
-    el("entry-form").addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-drop-chip]");
-      if (!btn) return;
-      chips.tags = chips.tags.filter((t) => t !== btn.dataset.dropChip);
-      drawChips();
-    });
-    drawChips();
-
-    /* --- 画像 --- */
-    const dz = el("dropzone");
-    const input = el("file-input");
-    const inspect = (rows) => {
-      const box = el("inspect");
-      box.hidden = !rows.length;
-      box.innerHTML = rows.map(([ok, label, state]) =>
-        `<li data-ok="${ok}"><span class="mark">●</span><span>${esc(label)}</span><span class="state">${esc(state)}</span></li>`).join("");
-    };
-    const drawPreview = () => {
-      el("work-preview").innerHTML = picked
-        ? `<img src="${esc(picked.media)}" alt="登録する作品のプレビュー">`
-        : `<span class="hint">画像を選ぶとここに出ます</span>`;
-    };
-
-    async function takeFile(file) {
-      if (!file) return;
-      const out = await fitImage(file);
-      const media = typeof out === "string" ? out : out?.media;
-      if (!media) { inspect([["false", "画像", "この形式は取り込めませんでした"]]); return; }
-      picked = { media, w: out?.w ?? 0, h: out?.h ?? 0 };
-      const kb = Math.round(media.length / 1024);
-      inspect([
-        ["true", "形式", file.type || "画像"],
-        ["true", "大きさ", picked.w ? `${picked.w} × ${picked.h}` : "そのまま"],
-        [kb > 1200 ? "false" : "true", "データ量", `${kb} KB`],
-      ]);
-      if (!el("e-title").value) el("e-title").value = file.name.replace(/\.[^.]+$/, "");
-      drawPreview();
-    }
-    dz.addEventListener("click", () => input.click());
-    dz.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); } });
-    input.addEventListener("change", () => takeFile(input.files[0]));
-    dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.dataset.over = "true"; });
-    dz.addEventListener("dragleave", () => { dz.dataset.over = "false"; });
-    dz.addEventListener("drop", (e) => { e.preventDefault(); dz.dataset.over = "false"; takeFile(e.dataTransfer.files[0]); });
-    drawPreview();
-
-    /* --- 公開状態の要約 --- */
-    const visValue = () => document.querySelector('input[name="vis"]:checked')?.value ?? "DRAFT";
-    const summarize = () => {
-      const v = visValue();
-      el("register-summary").textContent = v === "PUBLIC" ? "PUBLIC で登録（WORKSに出る）" : `${v} で登録`;
-    };
-    document.querySelectorAll('input[name="vis"]').forEach((r) => r.addEventListener("change", summarize));
-    el("entry-form").addEventListener("input", () => { el("autosave").textContent = "入力中"; });
-    summarize();
-
-    el("btn-clear-form").addEventListener("click", () => {
-      el("entry-form").reset();
-      picked = null; chips.tags = [];
-      inspect([]); drawChips(); drawPreview(); summarize();
-      el("e-date").value = new Date().toISOString().slice(0, 10);
-    });
-
-    el("btn-register").addEventListener("click", () => {
-      if (!picked) { toast("先に画像を選んでください"); return; }
-      const r = store.addWork({
-        title: el("e-title").value.trim(),
-        mainImage: picked.media,
-        altText: el("e-alt").value.trim(),
-        createdOn: el("e-date").value,
-        category: el("e-cat").value,
-        series: el("e-series").value,
-        slug: el("e-slug").value.trim(),
-        sortOrder: el("e-sort").value,
-        tags: [...chips.tags],
-        description: el("e-desc").value,
-        memo: el("e-memo").value,
-        featured: el("e-featured").checked,
-        visibility: visValue(),
-      });
-      if (!r.ok) { toast(r.reason); return; }
-      toast(r.persisted ? `「${r.work.title}」を登録しました` : `登録しました（${r.reason}）`);
-      el("btn-clear-form").click();
-    });
-  }
-
-  /* ============ 作品の管理 ============ */
-  if (el("works-list")) {
-    const search = el("works-search");
-    const visSel = el("works-vis");
-
-    const render = () => {
-      const q = search.value.trim().toLowerCase();
-      const rows = store.mergedWorks().filter((w) => {
-        if (visSel.value && w.visibility !== visSel.value) return false;
-        if (!q) return true;
-        return `${w.title} ${(w.tags ?? []).join(" ")}`.toLowerCase().includes(q);
-      });
-      el("works-count").textContent = String(rows.length);
-      el("works-empty").hidden = rows.length > 0;
-      el("works-list").innerHTML = rows.map((w) => `
-        <li data-id="${esc(w.id)}">
-          <img src="${esc(w.mainImage)}" alt="" width="40" height="40" style="object-fit:cover">
-          <span><strong>${esc(w.title)}</strong>
-            ${w.featured ? '<span class="tag-chip">FEATURE</span>' : ""}<br>
-            <span style="color:var(--c-ink-muted)">${esc(d(w.createdOn))} ・ ${esc(w.category ?? "")}</span></span>
-          <span class="vis-pill" data-vis="${esc(w.visibility)}">${esc(w.visibility)}</span>
-          <span class="home-slot__actions">
-            <button class="btn btn--sm" data-edit="${esc(w.id)}">編集</button>
-            <button class="btn btn--sm" data-delete="${esc(w.id)}">削除</button>
-          </span>
-          <div class="item-edit" id="edit-${esc(w.id)}" hidden></div>
-        </li>`).join("");
-    };
-
-    const editForm = (w) => `
-      <div class="form-row">
-        <div class="field"><label>作品名</label><input class="input" data-f="title" value="${esc(w.title)}"></div>
-        <div class="field"><label>制作日</label><input class="input" type="date" data-f="createdOn" value="${esc(w.createdOn)}"></div>
-        <div class="field"><label>分類</label>
-          <select class="select" data-f="category">
-            ${store.mergedCategories().map((c) => `<option value="${esc(c.key)}"${w.category === c.key ? " selected" : ""}>${esc(c.name)}</option>`).join("")}
-          </select></div>
-      </div>
-      <div class="form-row">
-        <div class="field"><label>シリーズ</label>
-          <select class="select" data-f="series">
-            <option value="">（なし）</option>
-            ${store.mergedSeries().map((s) => `<option value="${esc(s.slug)}"${w.series === s.slug ? " selected" : ""}>${esc(s.name)}</option>`).join("")}
-          </select></div>
-        <div class="field"><label>公開状態</label>
-          <select class="select" data-f="visibility">
-            ${VIS.map((v) => `<option value="${v}"${w.visibility === v ? " selected" : ""}>${v}</option>`).join("")}
-          </select></div>
-        <div class="field"><label>並び順</label><input class="input" type="number" data-f="sortOrder" value="${Number(w.sortOrder) || 0}"></div>
-      </div>
-      <div class="field"><label>画像の説明（読み上げ用）</label><input class="input" data-f="altText" value="${esc(w.altText ?? "")}"></div>
-      <div class="field"><label>作品の文章</label><textarea class="textarea" data-f="description">${esc(w.description ?? "")}</textarea></div>
-      <div class="field"><label>タグ（スペース区切り）</label><input class="input" data-f="tags" value="${esc((w.tags ?? []).join(" "))}"></div>
-      <label class="check"><input type="checkbox" data-f="featured"${w.featured ? " checked" : ""}> HOMEの特集に出す</label>
-      <div class="field"><label>管理メモ</label><textarea class="textarea" data-f="memo">${esc(w.memo ?? "")}</textarea></div>
-      <div class="publish-bar">
-        <span class="spacer"></span>
-        <button class="btn btn--sm" data-cancel="${esc(w.id)}">閉じる</button>
-        <button class="btn btn--sm btn--primary" data-save="${esc(w.id)}">保存する</button>
-      </div>`;
-
-    el("works-list").addEventListener("click", (e) => {
-      const edit = e.target.closest("[data-edit]");
-      const save = e.target.closest("[data-save]");
-      const cancel = e.target.closest("[data-cancel]");
-      const del = e.target.closest("[data-delete]");
-
-      if (edit) {
-        const panel = el(`edit-${edit.dataset.edit}`);
-        const w = store.workById(edit.dataset.edit);
-        if (panel.hidden) { panel.innerHTML = editForm(w); panel.hidden = false; }
-        else panel.hidden = true;
-        return;
-      }
-      if (cancel) { el(`edit-${cancel.dataset.cancel}`).hidden = true; return; }
-      if (save) {
-        const panel = el(`edit-${save.dataset.save}`);
-        const v = (f) => panel.querySelector(`[data-f="${f}"]`);
-        const r = store.updateWork(save.dataset.save, {
-          title: v("title").value.trim(),
-          createdOn: v("createdOn").value,
-          category: v("category").value,
-          series: v("series").value,
-          visibility: v("visibility").value,
-          sortOrder: Number(v("sortOrder").value) || 0,
-          altText: v("altText").value.trim(),
-          description: v("description").value,
-          tags: v("tags").value.split(/\s+/).filter(Boolean),
-          featured: v("featured").checked,
-          memo: v("memo").value,
-        });
-        toast(r.ok ? (r.persisted ? "保存しました" : `保存しました（${r.reason}）`) : r.reason);
-        render();
-        return;
-      }
-      if (del) {
-        if (!confirmTwice(del, "完全に削除（もう一度押す）")) return;
-        store.deleteWork(del.dataset.delete);
-        toast("削除しました（元に戻せません）");
-        render();
-      }
-    });
-
-    search.addEventListener("input", render);
-    visSel.addEventListener("change", render);
-    render();
-  }
-
-  /* ============ シリーズ ============ */
-  if (el("series-list")) {
-    const render = () => {
-      const list = store.mergedSeries();
-      el("series-list").innerHTML = list.length ? list.map((s) => {
-        const count = store.seriesUsage(s.slug);
-        return `<li>
-          <span class="order">◆</span>
-          <span><strong>${esc(s.name)}</strong> <span class="order">${esc(s.slug)}</span><br>
-            <span style="color:var(--c-ink-muted)">${esc(s.copy ?? "")}</span></span>
-          <span class="order num">${count}</span>
-          <span><button class="btn btn--sm" data-del-series="${esc(s.slug)}">削除</button></span>
-        </li>`;
-      }).join("") : `<li><span class="hint">まだシリーズがありません</span></li>`;
-    };
-
-    el("s-add").addEventListener("click", () => {
-      const r = store.addSeries({ name: el("s-name").value, copy: el("s-copy").value });
-      if (!r.ok) { toast(r.reason); return; }
-      toast(r.persisted ? `「${r.series.name}」を追加しました` : `追加しました（${r.reason}）`);
-      el("s-name").value = ""; el("s-copy").value = "";
-      render();
-    });
-
-    el("series-list").addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-del-series]");
-      if (!btn) return;
-      const slug = btn.dataset.delSeries;
-      const used = store.seriesUsage(slug);
-      if (used && btn.dataset.force !== "yes") {
-        btn.dataset.force = "yes";
-        btn.textContent = `${used}点の紐付けを外して削除`;
-        setTimeout(() => { btn.dataset.force = ""; btn.textContent = "削除"; }, 4000);
-        toast(`このシリーズは作品 ${used} 点で使われています`);
-        return;
-      }
-      if (!used && !confirmTwice(btn, "削除（もう一度押す）")) return;
-      const r = store.deleteSeries(slug, { force: true });
-      toast(r.ok ? `削除しました${r.detached ? `（${r.detached}点の紐付けを外しました）` : ""}` : r.reason);
-      render();
-    });
-    render();
-  }
-
-  /* ============ 分類 ============ */
-  if (el("cat-list")) {
-    const render = () => {
-      el("cat-list").innerHTML = store.mergedCategories().map((c) => {
-        const count = store.categoryUsage(c.key);
-        return `<li>
-          <span class="order">◆</span>
-          <span><strong>${esc(c.name)}</strong> ${c.jp ? `<span class="order">${esc(c.jp)}</span>` : ""}</span>
-          <span class="order num">${count}</span>
-          <span><button class="btn btn--sm" data-del-cat="${esc(c.key)}">削除</button></span>
-        </li>`;
-      }).join("");
-    };
-
-    el("cat-add").addEventListener("click", () => {
-      const r = store.addCategory({ name: el("c-name").value, jp: el("c-jp").value });
-      if (!r.ok) { toast(r.reason); return; }
-      toast(r.persisted ? `「${r.category.name}」を追加しました` : `追加しました（${r.reason}）`);
-      el("c-name").value = ""; el("c-jp").value = "";
-      render();
-    });
-
-    el("cat-list").addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-del-cat]");
-      if (!btn) return;
-      const key = btn.dataset.delCat;
-      const used = store.categoryUsage(key);
-      if (used && btn.dataset.force !== "yes") {
-        btn.dataset.force = "yes";
-        btn.textContent = `${used}点を別の分類へ移して削除`;
-        setTimeout(() => { btn.dataset.force = ""; btn.textContent = "削除"; }, 4000);
-        toast(`この分類の作品が ${used} 点あります`);
-        return;
-      }
-      if (!used && !confirmTwice(btn, "削除（もう一度押す）")) return;
-      const r = store.deleteCategory(key, { force: true });
-      toast(r.ok ? `削除しました${r.moved ? `（${r.moved}点を移しました）` : ""}` : r.reason);
-      render();
-    });
-    render();
-  }
-
-  /* ============ HOMEの編集 ============ */
-  if (el("home-editor")) {
-    const LAYOUTS = [
-      ["hero", "キービジュアル"],
-      ["feature", "特集（大1点＋小2点）"],
-      ["details", "ディテールの帯"],
-      ["colorstory", "色でまとめる"],
-      ["new", "選りすぐり（非対称グリッド）"],
-      ["spotlight", "シリーズ特集"],
-      ["archive", "モザイク"],
-    ];
-    const LINKS = [["/works/", "WORKS"], ["/series/", "SERIES"]];
-    const open = new Set();
-
-    const mediaSelect = (attrs, value) => {
-      const lib = store.mediaLibrary();
-      const known = lib.some((m) => m.value === value);
-      return `<select class="select" ${attrs}>
-        <option value="">（画像なし）</option>
-        ${lib.map((m) => `<option value="${esc(m.value)}"${m.value === value ? " selected" : ""}>${esc(m.label)}</option>`).join("")}
-        ${!known && value ? `<option value="${esc(value)}" selected>アップロードした画像</option>` : ""}
-      </select>`;
-    };
-
-    /** 文字を置く場所。9つの押しボタンと、細かく決めるつまみ */
-    const SPOTS = [
-      ["左上", 0, 0], ["中央上", 50, 0], ["右上", 100, 0],
-      ["左", 0, 50], ["中央", 50, 50], ["右", 100, 50],
-      ["左下", 0, 100], ["中央下", 50, 100], ["右下", 100, 100],
-    ];
-    const textPlaceRows = (o) => {
-      const tx = Number.isFinite(Number(o.tx)) ? Number(o.tx) : 0;
-      const ty = Number.isFinite(Number(o.ty)) ? Number(o.ty) : 100;
-      const tw = Number.isFinite(Number(o.tw)) ? Number(o.tw) : 62;
-      const align = o.align || "left";
-      return `
-      <fieldset class="place">
-        <legend>文字の位置</legend>
-        <div class="place__grid">
-          ${SPOTS.map(([label, x, y]) => `<button class="place__spot" type="button" title="${label}"
-            data-spot="${x},${y}" aria-label="${label}に置く"
-            aria-pressed="${tx === x && ty === y}"></button>`).join("")}
-        </div>
-        <div class="place__ranges">
-          <div class="range-row"><span>左右</span>
-            <input type="range" min="0" max="100" value="${tx}" data-s="tx">
-            <span class="num" data-out="tx">${tx}%</span></div>
-          <div class="range-row"><span>上下</span>
-            <input type="range" min="0" max="100" value="${ty}" data-s="ty">
-            <span class="num" data-out="ty">${ty}%</span></div>
-          <div class="range-row"><span>文字の幅</span>
-            <input type="range" min="20" max="100" value="${tw}" data-s="tw">
-            <span class="num" data-out="tw">${tw}%</span></div>
-          <div class="range-row"><span>行のそろえ</span>
-            <span class="seg">
-              ${[["left", "左"], ["center", "中"], ["right", "右"]].map(([v, l]) =>
-                `<button class="seg__btn" type="button" data-s-set="align" data-value="${v}"
-                  aria-pressed="${align === v}">${l}</button>`).join("")}
-            </span></div>
-        </div>
-      </fieldset>`;
-    };
-
-    const focusRows = (o) => {
-      const [fx, fy] = String(o.focus || "50% 40%").split(" ").map((v) => parseInt(v, 10) || 50);
-      return `
-      <div class="range-row"><span>見せる位置（左右）</span>
-        <input type="range" min="0" max="100" value="${fx}" data-s-focus="x"><span class="num">${fx}%</span></div>
-      <div class="range-row"><span>見せる位置（上下）</span>
-        <input type="range" min="0" max="100" value="${fy}" data-s-focus="y"><span class="num">${fy}%</span></div>`;
-    };
-
-    /** 編集ステージ。公開ページと同じ1枚を出し、その上でつかんで動かす */
-    const stage = (slide) => `
-      <div class="edit-stage" data-stage data-mode="text" data-view="pc">
-        <div class="edit-stage__bar">
-          <span class="seg">
-            <button class="seg__btn" type="button" data-stage-mode="text" aria-pressed="true">文字を動かす</button>
-            <button class="seg__btn" type="button" data-stage-mode="image" aria-pressed="false">絵を動かす</button>
-          </span>
-          <span class="seg">
-            <button class="seg__btn" type="button" data-stage-view="pc" aria-pressed="true">PC</button>
-            <button class="seg__btn" type="button" data-stage-view="sp" aria-pressed="false">スマホ</button>
-          </span>
-          <span class="spacer"></span>
-          <span class="zoom">
-            <button class="btn btn--sm" type="button" data-zoom="-1" aria-label="縮小">−</button>
-            <span class="num" data-stage-zoom>${Math.round((slide.zoom || 1) * 100)}%</span>
-            <button class="btn btn--sm" type="button" data-zoom="1" aria-label="拡大">＋</button>
-          </span>
-          <span class="num edit-stage__read" data-stage-read></span>
-        </div>
-        <div class="edit-stage__frame" data-stage-frame>
-          ${home.slideHTML(slide, { url })}
-        </div>
-        <p class="hint" data-stage-hint>文字をつかんで動かせます。角をひくと幅が変わります。</p>
-      </div>`;
-
-    const slideForm = (slot, slide, i, total) => `
-      <article class="home-slide" data-slide="${esc(slide.id)}">
-        <header class="home-slot__head">
-          <span class="home-slot__no num">${i + 1}</span>
-          ${slide.media ? `<img class="home-slot__thumb" src="${esc(url(slide.media))}" alt="">` : `<span class="home-slot__thumb"></span>`}
-          <span class="home-slot__title"><strong>${esc(slide.title || slide.eyebrow || "（文字なし）")}</strong>
-            ${slide.media ? "" : '<span class="tag-chip">画像なし</span>'}</span>
-          <span class="home-slot__actions">
-            <button class="btn btn--sm" data-slide-move="-1" aria-label="前へ">↑</button>
-            <button class="btn btn--sm" data-slide-move="1" aria-label="後ろへ">↓</button>
-            ${total > 1 ? '<button class="btn btn--sm" data-slide-drop>削除</button>' : ""}
-          </span>
-        </header>
-        <div class="home-slot__body">
-          ${stage(slide)}
-          <div class="form-row">
-            <div class="field"><label>PC用の画像</label>${mediaSelect('data-s="media"', slide.media)}
-              <input type="file" accept="image/*" data-s-file="media" class="input" style="padding:var(--s-1)"></div>
-            <div class="field"><label>スマホ用の画像</label>${mediaSelect('data-s="mediaMobile"', slide.mediaMobile)}
-              <input type="file" accept="image/*" data-s-file="mediaMobile" class="input" style="padding:var(--s-1)"></div>
-          </div>
-          <div class="form-row">
-            <div class="field"><label>小見出し</label><input class="input" data-s="eyebrow" value="${esc(slide.eyebrow ?? "")}"></div>
-            <div class="field"><label>作品名</label><input class="input" data-s="title" value="${esc(slide.title ?? "")}"></div>
-            <div class="field"><label>補足（年など）</label><input class="input" data-s="subtitle" value="${esc(slide.subtitle ?? "")}"></div>
-          </div>
-          <div class="form-row">
-            <div class="field"><label>リンク先</label>
-              <select class="select" data-s="href">
-                ${LINKS.map(([v, l]) => `<option value="${esc(v)}"${slide.href === v ? " selected" : ""}>${esc(l)}</option>`).join("")}
-              </select></div>
-            <div class="field"><label>リンクの文字</label><input class="input" data-s="linkLabel" value="${esc(slide.linkLabel ?? "")}"></div>
-            <div class="field"><label>ヘッダーの文字色</label>
-              <select class="select" data-s="tone">
-                <option value="dark"${slide.tone !== "light" ? " selected" : ""}>BLACK（明るい絵）</option>
-                <option value="light"${slide.tone === "light" ? " selected" : ""}>WHITE（暗い絵）</option>
-              </select></div>
-          </div>
-          <div class="color-row">
-            <label>背景色 <input type="color" data-s="bg" value="${esc(slide.bg || "#FFF9FC")}"></label>
-            <label>文字色 <input type="color" data-s="fg" value="${esc(slide.fg || "#171417")}"></label>
-            <label class="check"><input type="checkbox" data-s="showText"${slide.showText !== false ? " checked" : ""}> 文字を出す</label>
-          </div>
-          <details class="fine">
-            <summary>数値で決める</summary>
-            ${focusRows(slide)}
-            ${textPlaceRows(slide)}
-          </details>
-        </div>
-      </article>`;
-
-    /** キービジュアル以外の区画。中身は作品から拾うので、見せ方だけを決める */
-    const sectionForm = (slot) => {
-      const tags = [...new Set(store.mergedWorks().flatMap((w) => w.tags ?? []))];
-      return `
-      <div class="form-row">
-        <div class="field"><label>見せ方</label>
-          <select class="select" data-h="layout">
-            ${LAYOUTS.filter(([v]) => v !== "hero").map(([v, l]) =>
-              `<option value="${v}"${slot.layout === v ? " selected" : ""}>${esc(l)}</option>`).join("")}
-          </select></div>
-        <div class="field"><label>見出し（英字）</label><input class="input" data-h="title" value="${esc(slot.title ?? "")}"></div>
-        <div class="field"><label>リンクの文字</label><input class="input" data-h="linkLabel" value="${esc(slot.linkLabel ?? "")}"></div>
-      </div>
-      ${slot.layout === "colorstory" ? `
-      <div class="field"><label>まとめるタグ</label>
-        <select class="select" data-h="tag">
-          <option value="">（すべての作品から）</option>
-          ${tags.map((t) => `<option value="${esc(t)}"${slot.tag === t ? " selected" : ""}>${esc(t)}</option>`).join("")}
-        </select></div>` : ""}
-      ${slot.layout === "spotlight" ? `
-      <div class="field"><label>特集するシリーズ</label>
-        <select class="select" data-h="seriesSlug">
-          <option value="">（自動で選ぶ）</option>
-          ${store.mergedSeries().map((s) => `<option value="${esc(s.slug)}"${slot.seriesSlug === s.slug ? " selected" : ""}>${esc(s.name)}</option>`).join("")}
-        </select></div>` : ""}
-      <div class="color-row">
-        <label class="check"><input type="checkbox" data-h="published"${slot.published !== false ? " checked" : ""}> HOMEに表示する</label>
-      </div>
-      <div>
-        <p class="hint">プレビュー</p>
-        <div class="home-preview">${home.homeSlotHTML(slot, {
-          url, works: store.publicWorks(), series: store.mergedSeries(),
-        }) || '<p class="coming">作品が増えると、ここに出ます</p>'}</div>
-      </div>`;
-    };
-
-    const form = (slot) => {
-      if (slot.layout !== "hero") return sectionForm(slot);
-      const slides = slot.slides ?? [];
-      return `
-      <p class="hint">1枚ずつ切り替わります。上から順に出ます。</p>
-      <div class="home-slides">${slides.map((sl, i) => slideForm(slot, sl, i, slides.length)).join("")}</div>
-      <div class="publish-bar">
-        <button class="btn btn--sm" type="button" data-slide-add>＋ 1枚ふやす</button>
-        <span class="spacer"></span>
-        <label class="check"><input type="checkbox" data-h="autoplay"${slot.autoplay ? " checked" : ""}> 自動送り</label>
-        <label class="check">間隔
-          <input class="input" type="number" min="2" max="30" style="width:5rem" data-h="interval"
-                 value="${Number(slot.interval) || 6}"> 秒</label>
-        <label class="check"><input type="checkbox" data-h="published"${slot.published !== false ? " checked" : ""}> HOMEに表示する</label>
-      </div>`;
-    };
-
-    /** 入力のたびに描き直すので、打っていた場所へカーソルを戻す */
-    const keepFocus = (redraw) => {
-      const box = el("home-editor");
-      const a = document.activeElement;
-      const spot = box.contains(a) && a !== box ? {
-        slot: a.closest(".home-slot")?.dataset.id,
-        slide: a.closest(".home-slide")?.dataset.slide,
-        key: a.dataset.s ?? a.dataset.h ?? "",
-        pos: (() => { try { return a.selectionStart; } catch { return null; } })(),
-      } : null;
-      redraw();
-      if (!spot?.slot) return;
-      const scope = spot.slide
-        ? box.querySelector(`.home-slot[data-id="${spot.slot}"] .home-slide[data-slide="${spot.slide}"]`)
-        : box.querySelector(`.home-slot[data-id="${spot.slot}"]`);
-      const back = scope?.querySelector(`[data-s="${spot.key}"],[data-h="${spot.key}"]`);
-      if (!back) return;
-      back.focus();
-      if (spot.pos != null) { try { back.setSelectionRange(spot.pos, spot.pos); } catch { /* 位置を持たない入力もある */ } }
-    };
-
-    const render = () => keepFocus(() => {
-      const slots = store.homeSlotsAll();
-      el("home-editor").innerHTML = slots.map((slot, i) => `
-        <article class="home-slot" data-id="${esc(slot.id)}" data-published="${slot.published !== false}">
-          <header class="home-slot__head">
-            <span class="home-slot__no num">${String(i + 1).padStart(2, "0")}</span>
-            ${(() => { const m = slot.layout === "hero" ? (slot.slides ?? []).find((x) => x.media)?.media : "";
-              return m ? `<img class="home-slot__thumb" src="${esc(url(m))}" alt="">` : `<span class="home-slot__thumb"></span>`; })()}
-            <span class="home-slot__title">
-              <strong>${esc(slot.layout === "hero" ? "キービジュアル" : (slot.title || "（無題）"))}</strong>
-              ${slot.layout === "hero" ? `<span class="tag-chip">${(slot.slides ?? []).length}枚</span>` : ""}
-              <span class="tag-chip">${esc(LAYOUTS.find((l) => l[0] === slot.layout)?.[1] ?? slot.layout)}</span>
-              ${slot.published === false ? '<span class="tag-chip">非公開</span>' : ""}
-            </span>
-            <span class="home-slot__actions">
-              <button class="btn btn--sm" data-move="-1" data-id="${esc(slot.id)}" aria-label="上へ">↑</button>
-              <button class="btn btn--sm" data-move="1" data-id="${esc(slot.id)}" aria-label="下へ">↓</button>
-              <button class="btn btn--sm" data-toggle="${esc(slot.id)}">${slot.published === false ? "公開する" : "非公開にする"}</button>
-              <button class="btn btn--sm" data-open="${esc(slot.id)}">${open.has(slot.id) ? "閉じる" : "編集"}</button>
-              <button class="btn btn--sm" data-drop="${esc(slot.id)}">削除</button>
-            </span>
-          </header>
-          <div class="home-slot__body"${open.has(slot.id) ? "" : " hidden"}>${open.has(slot.id) ? form(slot) : ""}</div>
-        </article>`).join("");
-      el("home-editor").querySelectorAll("[data-stage]").forEach(decorate);
-    });
-
-    /** ステージの中の文字に、つかむための取っ手を足す */
-    function decorate(stageEl) {
-      const type = stageEl.querySelector(".kv__type");
-      if (type && !type.querySelector("[data-stage-handle]")) {
-        type.tabIndex = 0;
-        type.setAttribute("role", "application");
-        type.setAttribute("aria-label", "文字の位置。つかんで動かすか、矢印キーで動かします");
-        const h = document.createElement("span");
-        h.className = "edit-stage__handle";
-        h.setAttribute("data-stage-handle", "");
-        h.title = "幅を変える";
-        type.appendChild(h);
-      }
-      readout(stageEl);
-    }
-
-    const slotOf = (id) => store.homeSlotsAll().find((s) => s.id === id);
-    const patch = (id, p) => { store.updateHomeSlot(id, p); render(); };
-
-    const idsOf = (stageEl) => ({
-      slot: stageEl.closest(".home-slot").dataset.id,
-      slide: stageEl.closest(".home-slide").dataset.slide,
-    });
-    const slideData = (stageEl) => {
-      const { slot, slide } = idsOf(stageEl);
-      return (slotOf(slot)?.slides ?? []).find((x) => x.id === slide) ?? {};
-    };
-
-    /** ステージ上の見た目を先に動かし、そのまま保存する */
-    const put = (stageEl, p) => {
-      const sl = stageEl.querySelector(".kv__slide");
-      if ("tx" in p) sl.style.setProperty("--hs-tx", `${p.tx}%`);
-      if ("ty" in p) sl.style.setProperty("--hs-ty", `${p.ty}%`);
-      if ("tw" in p) sl.style.setProperty("--hs-tw", `${p.tw}%`);
-      if ("zoom" in p) sl.style.setProperty("--hs-zoom", String(p.zoom));
-      if ("focus" in p) sl.style.setProperty("--hs-focus", p.focus);
-      const { slot, slide } = idsOf(stageEl);
-      store.updateHomeSlide(slot, slide, p);
-      readout(stageEl);
-    };
-
-    function readout(stageEl) {
-      const s = slideData(stageEl);
-      const read = stageEl.querySelector("[data-stage-read]");
-      if (read) {
-        read.textContent = stageEl.dataset.mode === "image"
-          ? `見せる位置 ${s.focus || "50% 40%"}`
-          : `左右 ${s.tx ?? 0}% ／ 上下 ${s.ty ?? 100}% ／ 幅 ${s.tw ?? 62}%`;
-      }
-      const z = stageEl.querySelector("[data-stage-zoom]");
-      if (z) z.textContent = `${Math.round((s.zoom || 1) * 100)}%`;
-      const box = stageEl.closest(".home-slide");
-      const set = (k, v) => { const i = box.querySelector(`[data-s="${k}"]`); if (i && i.type === "range") i.value = v; };
-      set("tx", s.tx ?? 0); set("ty", s.ty ?? 100); set("tw", s.tw ?? 62);
-      box.querySelectorAll("[data-out]").forEach((o) => {
-        const v = { tx: s.tx ?? 0, ty: s.ty ?? 100, tw: s.tw ?? 62 }[o.dataset.out];
-        if (v != null) o.textContent = `${v}%`;
-      });
-      box.querySelectorAll("[data-spot]").forEach((b) => {
-        const [x, y] = b.dataset.spot.split(",").map(Number);
-        b.setAttribute("aria-pressed", String((s.tx ?? 0) === x && (s.ty ?? 100) === y));
-      });
-      box.querySelectorAll("[data-s-set]").forEach((b) => {
-        b.setAttribute("aria-pressed", String((s[b.dataset.sSet] ?? "left") === b.dataset.value));
-      });
-    }
-
-    /* --- クリック --- */
-    el("home-editor").addEventListener("click", (e) => {
-      const t = (attr) => e.target.closest(`[data-${attr}]`);
-      const card = e.target.closest(".home-slot");
-      const slideEl = e.target.closest(".home-slide");
-
-      const stageBtn = e.target.closest("[data-stage-mode],[data-stage-view],[data-zoom]");
-      if (stageBtn) {
-        const st = stageBtn.closest("[data-stage]");
-        const mode = stageBtn.dataset.stageMode, view = stageBtn.dataset.stageView, zoom = stageBtn.dataset.zoom;
-        if (mode) {
-          st.dataset.mode = mode;
-          st.querySelectorAll("[data-stage-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stageMode === mode)));
-          st.querySelector("[data-stage-hint]").textContent = mode === "image"
-            ? "絵をつかむと見せる位置が動きます。ホイール・2本指・＋−で拡大縮小。"
-            : "文字をつかんで動かせます。角をひくと幅が変わります。";
-        }
-        if (view) {
-          st.dataset.view = view;
-          st.querySelectorAll("[data-stage-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.stageView === view)));
-        }
-        if (zoom) {
-          const s = slideData(st);
-          put(st, { zoom: Math.min(3, Math.max(1, Number(((s.zoom || 1) + Number(zoom) * 0.1).toFixed(2)))) });
-        }
-        readout(st);
-        return;
-      }
-
-      const spot = t("spot"), setBtn = e.target.closest("[data-s-set]");
-      if (card && slideEl && (spot || setBtn)) {
-        const p = spot
-          ? { tx: Number(spot.dataset.spot.split(",")[0]), ty: Number(spot.dataset.spot.split(",")[1]) }
-          : { [setBtn.dataset.sSet]: setBtn.dataset.value };
-        open.add(card.dataset.id);
-        store.updateHomeSlide(card.dataset.id, slideEl.dataset.slide, p);
-        const st = slideEl.querySelector("[data-stage]");
-        if (st) {
-          const sl = st.querySelector(".kv__slide");
-          if ("tx" in p) sl.style.setProperty("--hs-tx", `${p.tx}%`);
-          if ("ty" in p) sl.style.setProperty("--hs-ty", `${p.ty}%`);
-          if ("align" in p) sl.style.setProperty("--hs-align", p.align);
-          readout(st);
-        }
-        return;
-      }
-
-      const add = t("slide-add"), smove = t("slide-move"), sdrop = t("slide-drop");
-      if (card && (add || smove || sdrop)) {
-        open.add(card.dataset.id);
-        if (add) { store.addHomeSlide(card.dataset.id); toast("1枚ふやしました"); }
-        if (smove) {
-          const r = store.moveHomeSlide(card.dataset.id, slideEl.dataset.slide, Number(smove.dataset.slideMove));
-          if (!r.ok) toast(r.reason);
-        }
-        if (sdrop) {
-          if (!confirmTwice(sdrop, "この1枚を削除")) return;
-          const r = store.deleteHomeSlide(card.dataset.id, slideEl.dataset.slide);
-          toast(r.ok ? "削除しました" : r.reason);
-        }
-        render();
-        return;
-      }
-
-      const openBtn = t("open"), drop = t("drop"), toggle = t("toggle"), move = t("move");
-      if (openBtn) {
-        const id = openBtn.dataset.open;
-        open.has(id) ? open.delete(id) : open.add(id);
-        render();
-      } else if (toggle) {
-        patch(toggle.dataset.toggle, { published: slotOf(toggle.dataset.toggle).published === false });
-      } else if (move) {
-        const r = store.moveHomeSlot(move.dataset.id, Number(move.dataset.move));
-        if (!r.ok) toast(r.reason); else render();
-      } else if (drop) {
-        if (!confirmTwice(drop, "この区画を削除")) return;
-        const r = store.deleteHomeSlot(drop.dataset.drop);
-        toast(r.ok ? "削除しました" : r.reason);
-        render();
-      }
-    });
-
-    /* --- 入力 --- */
-    const NUMERIC = new Set(["tx", "ty", "tw", "interval"]);
-    el("home-editor").addEventListener("input", (e) => {
-      const card = e.target.closest(".home-slot");
-      if (!card) return;
-      const slideEl = e.target.closest(".home-slide");
-      const t = e.target;
-      const axis = t.dataset.sFocus;
-      const field = t.dataset.s ?? t.dataset.h;
-
-      let p = null;
-      if (axis) {
-        const box = (slideEl ?? card).querySelector(".home-slot__body");
-        const at = (a) => box.querySelector(`[data-s-focus="${a}"]`).value;
-        p = { focus: `${at("x")}% ${at("y")}%` };
-      } else if (field) {
-        p = { [field]: t.type === "checkbox" ? t.checked
-          : NUMERIC.has(field) ? Number(t.value)
-          : t.value };
-      }
-      if (!p) return;
-
-      open.add(card.dataset.id);
-      if (slideEl) store.updateHomeSlide(card.dataset.id, slideEl.dataset.slide, p);
-      else store.updateHomeSlot(card.dataset.id, p);
-
-      // つまみを動かしている間は組み直さず、ステージだけ更新する
-      const st = slideEl?.querySelector("[data-stage]");
-      if (st && (t.type === "range" || t.type === "color")) {
-        const sl = st.querySelector(".kv__slide");
-        for (const [k, v] of Object.entries(p)) {
-          if (k === "tx" || k === "ty" || k === "tw") sl.style.setProperty(`--hs-${k}`, `${v}%`);
-          if (k === "focus") sl.style.setProperty("--hs-focus", v);
-          if (k === "bg") sl.style.setProperty("--hs-bg", v);
-          if (k === "fg") sl.style.setProperty("--hs-fg", v);
-        }
-        readout(st);
-      } else render();
-    });
-
-    /* --- 画像のアップロード --- */
-    el("home-editor").addEventListener("change", async (e) => {
-      const field = e.target.dataset.sFile;
-      if (!field || !e.target.files?.[0]) return;
-      const card = e.target.closest(".home-slot");
-      const slideEl = e.target.closest(".home-slide");
-      const out = await fitImage(e.target.files[0]);
-      const media = typeof out === "string" ? out : out?.media;
-      if (!media) { toast("この画像は取り込めませんでした"); return; }
-      open.add(card.dataset.id);
-      const r = store.updateHomeSlide(card.dataset.id, slideEl.dataset.slide, { [field]: media });
-      toast(r.persisted ? "画像を差し替えました" : `差し替えました（${r.reason}）`);
-      render();
-    });
-
-    /* --- つかんで動かす --- */
-    let move = null;
-    el("home-editor").addEventListener("pointerdown", (e) => {
-      const st = e.target.closest("[data-stage]");
-      if (!st || e.button !== 0) return;
-      const sl = st.querySelector(".kv__slide");
-      const area = st.querySelector(".kv__free");
-      const type = st.querySelector(".kv__type");
-      if (!sl || !area) return;
-      const data = slideData(st);
-
-      if (e.target.closest("[data-stage-handle]")) {
-        move = { kind: "width", st, area: area.getBoundingClientRect(), x: e.clientX, tw: data.tw ?? 62 };
-      } else if (st.dataset.mode === "text" && type && e.target.closest(".kv__type")) {
-        move = { kind: "text", st, area: area.getBoundingClientRect(), box: type.getBoundingClientRect(),
-          x: e.clientX, y: e.clientY, tx: data.tx ?? 0, ty: data.ty ?? 100 };
-      } else if (st.dataset.mode === "image") {
-        const [fx, fy] = String(data.focus || "50% 40%").split(" ").map((v) => parseInt(v, 10) || 50);
-        move = { kind: "image", st, rect: sl.getBoundingClientRect(), x: e.clientX, y: e.clientY, fx, fy };
-      }
-      if (!move) return;
-      move.id = e.pointerId;
-      st.dataset.dragging = move.kind;
-      try { st.setPointerCapture(e.pointerId); } catch { /* 掴めない環境もある */ }
-      e.preventDefault();
-    });
-
-    const near = (v, to, dd = 3) => (Math.abs(v - to) <= dd ? to : v);
-    const round = (v) => Math.min(100, Math.max(0, Math.round(v)));
-
-    el("home-editor").addEventListener("pointermove", (e) => {
-      if (!move || e.pointerId !== move.id) return;
-      const dx = e.clientX - move.x, dy = e.clientY - move.y;
-      if (move.kind === "text") {
-        const freeW = Math.max(1, move.area.width - move.box.width);
-        const freeH = Math.max(1, move.area.height - move.box.height);
-        put(move.st, {
-          tx: near(round(move.tx + (dx / freeW) * 100), 50),
-          ty: near(round(move.ty + (dy / freeH) * 100), 50),
-        });
-      } else if (move.kind === "width") {
-        put(move.st, { tw: Math.min(100, Math.max(20, Math.round(move.tw + (dx / move.area.width) * 100))) });
-      } else if (move.kind === "image") {
-        put(move.st, {
-          focus: `${round(move.fx - (dx / move.rect.width) * 100)}% ${round(move.fy - (dy / move.rect.height) * 100)}%`,
-        });
-      }
-    });
-
-    const endMove = () => {
-      if (!move) return;
-      try { move.st.releasePointerCapture(move.id); } catch { /* 同上 */ }
-      delete move.st.dataset.dragging;
-      move = null;
-    };
-    el("home-editor").addEventListener("pointerup", endMove);
-    el("home-editor").addEventListener("pointercancel", endMove);
-
-    el("home-editor").addEventListener("wheel", (e) => {
-      const st = e.target.closest("[data-stage]");
-      if (!st || st.dataset.mode !== "image") return;
-      e.preventDefault();
-      const s = slideData(st);
-      put(st, { zoom: Math.min(3, Math.max(1, Number(((s.zoom || 1) + (e.deltaY < 0 ? 0.05 : -0.05)).toFixed(2)))) });
-    }, { passive: false });
-
-    el("home-editor").addEventListener("keydown", (e) => {
-      const st = e.target.closest("[data-stage]");
-      if (!st || !/^Arrow/.test(e.key) || !e.target.closest(".kv__type")) return;
-      const s = slideData(st);
-      const step = e.shiftKey ? 5 : 1;
-      const dd = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
-      if (!dd) return;
-      e.preventDefault();
-      put(st, { tx: round((s.tx ?? 0) + dd[0]), ty: round((s.ty ?? 100) + dd[1]) });
-    });
-
-    el("home-add").addEventListener("click", () => {
-      const r = store.addHomeSlot();
-      open.add(r.slot.id);
-      toast("区画を追加しました（非公開の状態です）");
-      render();
-    });
-    el("home-reset").addEventListener("click", (e) => {
-      if (!confirmTwice(e.currentTarget, "初期状態に戻す（もう一度押す）")) return;
-      store.resetHome();
-      toast("HOMEを初期状態に戻しました");
-      render();
-    });
-
-    render();
-  }
-
-  /* ============ 最下部のロゴ ============ */
-  if (el("brand-logo-field")) {
-    const preview = el("brand-logo-preview");
-    const paint = () => {
-      const src = store.brandLogo();
-      preview.innerHTML = src ? `<img src="${esc(src)}" alt="いま使っているロゴ">`
-        : `<span class="hint">いまは文字で組んでいます</span>`;
-    };
-    el("brand-logo-file").addEventListener("change", async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const data = await readImage(file);
-      if (!data) { toast("この画像は取り込めませんでした"); return; }
-      const r = store.setBrandLogo(data);
-      toast(r.persisted ? "ロゴを差し替えました" : `差し替えました（${r.reason}）`);
-      paint();
-    });
-    el("brand-logo-clear").addEventListener("click", () => {
-      store.setBrandLogo("");
-      toast("文字のロゴに戻しました");
-      paint();
-    });
-    paint();
-  }
-
-  /* ============ サイトの文字 ============ */
-  if (el("texts-list")) {
-    const frame = el("texts-frame");
-    const list = el("texts-list");
-    const pages = el("texts-pages");
-    let rows = [];
-    let page = "/";
-
-    const ask = (msg) => { try { frame.contentWindow.postMessage(msg, "*"); } catch { /* まだ読み込み中 */ } };
-    // 編集用のファイルからは、公開用のファイルを枠に出して直す
-    const pageURL = (p) => (window.PINK_SINGLE
-      ? `${window.PINK_PUBLIC ?? ""}#${p}`
-      : url(p));
-    const ALIGN = [["", "自動"], ["left", "左"], ["center", "中"], ["right", "右"]];
-
-    const draw = () => {
-      if (!rows.length) { list.innerHTML = `<p class="hint">このページに直せる文字はありません。</p>`; return; }
-      list.innerHTML = rows.map((r, i) => `
-        <div class="text-row${r.hidden ? " is-off" : ""}${r.edited ? " is-edited" : ""}" data-i="${i}">
-          <div class="text-row__head">
-            <span class="tag-chip">${esc(r.where)}</span>
-            ${r.edited ? '<span class="tag-chip">変更あり</span>' : ""}
-            ${r.hidden ? '<span class="tag-chip">非表示</span>' : ""}
-            <span class="spacer"></span>
-            <span class="seg seg--tight">
-              ${ALIGN.map(([v, l]) => `<button class="seg__btn" type="button" data-align="${v}"
-                aria-pressed="${(r.align || "") === v}" title="そろえ：${l}">${l}</button>`).join("")}
-            </span>
-            <button class="btn btn--sm" type="button" data-act="mark" title="この文字の場所を示す">位置</button>
-            <button class="btn btn--sm" type="button" data-act="toggle">${r.hidden ? "出す" : "消す"}</button>
-            <button class="btn btn--sm" type="button" data-act="reset"${r.edited ? "" : " disabled"}>戻す</button>
-          </div>
-          <textarea class="textarea" data-act="text" rows="${r.text.length > 40 ? 3 : 1}">${esc(r.text)}</textarea>
-        </div>`).join("");
-    };
-
-    const rowOf = (t) => {
-      const box = t.closest(".text-row");
-      return box ? rows[Number(box.dataset.i)] : null;
-    };
-    const saveText = (r, p) => { store.updateText(r.key, p); ask({ pinkTexts: "refresh" }); };
-
-    list.addEventListener("click", (e) => {
-      const btn = e.target.closest("button");
-      const r = rowOf(e.target);
-      if (!btn || !r) return;
-      if (btn.dataset.align !== undefined) saveText(r, { align: btn.dataset.align || undefined });
-      else if (btn.dataset.act === "toggle") saveText(r, { hidden: !r.hidden || undefined });
-      else if (btn.dataset.act === "reset") { store.resetText(r.key); ask({ pinkTexts: "refresh" }); }
-      else if (btn.dataset.act === "mark") ask({ pinkTexts: "mark", key: r.key });
-    });
-
-    let typing = null;
-    list.addEventListener("input", (e) => {
-      const r = rowOf(e.target);
-      if (!r || e.target.dataset.act !== "text") return;
-      r.text = e.target.value;
-      clearTimeout(typing);
-      typing = setTimeout(() => { store.updateText(r.key, { text: r.text }); ask({ pinkTexts: "refresh" }); }, 250);
-    });
-
-    pages.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-page]");
-      if (!btn) return;
-      page = btn.dataset.page;
-      pages.querySelectorAll("[data-page]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-      list.innerHTML = `<p class="hint">読み込み中…</p>`;
-      frame.src = pageURL(page);
-    });
-
-    el("texts-reset").addEventListener("click", (e) => {
-      if (!confirmTwice(e.currentTarget, "文字の編集を取り消す（もう一度押す）")) return;
-      store.resetTexts();
-      ask({ pinkTexts: "refresh" });
-      toast("文字を元に戻しました");
-    });
-
-    addEventListener("message", (e) => {
-      const msg = e.data;
-      if (!msg || !msg.pinkTexts) return;
-      if (msg.pinkTexts === "ready") ask({ pinkTexts: "collect" });
-      if (msg.pinkTexts === "list") {
-        const editing = document.activeElement?.dataset?.act === "text"
-          ? Number(document.activeElement.closest(".text-row").dataset.i) : -1;
-        const keep = editing >= 0 ? rows[editing] : null;
-        rows = msg.rows;
-        if (keep) { const same = rows.findIndex((r) => r.key === keep.key); if (same >= 0) rows[same].text = keep.text; }
-        if (editing >= 0) {
-          rows.forEach((r, i) => {
-            const box = list.querySelector(`.text-row[data-i="${i}"]`);
-            if (box) box.classList.toggle("is-off", r.hidden);
-          });
-          return;
-        }
-        draw();
-      }
-    });
-
-    frame.src = pageURL(page);
   }
 })();
 </script>
